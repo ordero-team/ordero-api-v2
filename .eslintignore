@@ -1,0 +1,10 @@
+dist
+node_modules
+yarn.lock
+package-lock.json
+**/*.test.js
+**/*.d.ts
+coverage
+.eslintrc.js
+.lintstagedrc.js
+.prettierrc.js

@@ -1,0 +1,52 @@
+kind: pipeline
+name: keran-api
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: keeppack/keran-api
+      tags:
+        - ${DRONE_SOURCE_BRANCH}
+
+---
+kind: pipeline
+name: notification
+
+steps:
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      channel: dev-ops
+      username: drone
+      link_names: true
+      template: >
+        {{#success build.status}}
+          Build {{build.number}} succeeded! :)
+          Event: {{build.event}}
+          Branch: {{build.branch}}
+          Tag: {{build.tag}}
+          Git SHA: {{build.commit}}
+          Link: {{build.link}}
+        {{else}}
+          Build {{build.number}} failed! :(
+          Event: {{build.event}}
+          Branch: {{build.branch}}
+          Tag: {{build.tag}}
+          Git SHA: {{build.commit}}
+          Link: {{build.link}}
+        {{/success}}
+
+depends_on:
+  - keran-api
+
+trigger:
+  status:
+    - success
+    - failure
