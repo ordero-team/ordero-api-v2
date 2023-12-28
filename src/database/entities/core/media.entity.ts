@@ -2,9 +2,10 @@ import { BaseEntity } from '@db/entities/base/base';
 import { Column, CoreEntity, ForeignColumn } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
-import { Employee } from '../owner/employee.entity';
+import { Owner } from '../owner/owner.entity';
 import { Product } from '../owner/product.entity';
 import { Restaurant } from '../owner/restaurant.entity';
+import { StaffUser } from '../staff/user.entity';
 
 @CoreEntity()
 export class Media extends BaseEntity {
@@ -16,11 +17,19 @@ export class Media extends BaseEntity {
 
   @Exclude()
   @ForeignColumn()
-  employee_id: string;
+  owner_id: string;
 
   @JoinColumn()
-  @OneToOne(() => Employee, { onDelete: 'CASCADE' })
-  employee: Employee;
+  @OneToOne(() => Owner, { onDelete: 'CASCADE' })
+  owner: Owner;
+
+  @Exclude()
+  @ForeignColumn()
+  staff_user_id: string;
+
+  @JoinColumn()
+  @OneToOne(() => StaffUser, { onDelete: 'CASCADE' })
+  staff_user: StaffUser;
 
   @Exclude()
   @ForeignColumn()

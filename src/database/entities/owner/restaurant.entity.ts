@@ -2,10 +2,10 @@ import { BaseEntity } from '@db/entities/base/base';
 import { Media } from '@db/entities/core/media.entity';
 import { CoreEntity, ForeignColumn, NotNullColumn, PhoneColumn, StatusColumn } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import { Column, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Order } from '../core/order.entity';
-import { Employee } from './employee.entity';
 import { Location } from './location.entity';
+import { Owner } from './owner.entity';
 import { ProductStock } from './product-stock.entity';
 import { Table } from './table.entity';
 
@@ -22,6 +22,9 @@ export class Restaurant extends BaseEntity {
   @PhoneColumn()
   phone: string;
 
+  @Column()
+  slug: string;
+
   @StatusColumn()
   status: RestaurantStatus;
 
@@ -30,8 +33,8 @@ export class Restaurant extends BaseEntity {
   owner_id: string;
 
   @JoinColumn()
-  @OneToOne(() => Employee, { onDelete: 'RESTRICT' })
-  owner: Employee;
+  @OneToOne(() => Owner, { onDelete: 'RESTRICT' })
+  owner: Owner;
 
   @Exclude()
   @OneToMany(() => Media, (media) => media.restaurant)

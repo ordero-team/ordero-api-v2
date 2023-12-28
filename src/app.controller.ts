@@ -6,4 +6,9 @@ export class AppController {
   async getHello(@Res() response) {
     return response.send('Ordero API V2');
   }
+
+  @Get('/favicon.ico')
+  favicon(@Res() response): string {
+    return response.noContent();
+  }
 }

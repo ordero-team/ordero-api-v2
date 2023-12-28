@@ -5,27 +5,23 @@ import {
   CoreEntity,
   DateTimeColumn,
   EmailColumn,
+  ForeignColumn,
   NotNullColumn,
   PhoneColumn,
   StatusColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { OneToOne } from 'typeorm';
+import { JoinColumn, OneToOne } from 'typeorm';
+import { Restaurant } from './restaurant.entity';
 
-export enum EmployeeStatus {
+export enum OwnerStatus {
   Verify = 'verify',
   Active = 'active',
   Inactive = 'inactive',
 }
 
-export enum EmployeeRole {
-  Owner = 'owner',
-  Cashier = 'cashier',
-  Waiter = 'waiter',
-}
-
 @CoreEntity()
-export class Employee extends BaseEntity {
+export class Owner extends BaseEntity {
   @NotNullColumn()
   name: string;
 
@@ -34,9 +30,6 @@ export class Employee extends BaseEntity {
 
   @EmailColumn({ nullable: true })
   email: string;
-
-  @NotNullColumn()
-  role: EmployeeRole;
 
   @Exclude()
   @NotNullColumn()
@@ -54,10 +47,18 @@ export class Employee extends BaseEntity {
   verified_at: Date;
 
   @StatusColumn()
-  status: EmployeeStatus;
+  status: OwnerStatus;
 
   @Exclude()
-  @OneToOne(() => Media, (media) => media.employee)
+  @ForeignColumn()
+  restaurant_id: string;
+
+  @JoinColumn()
+  @OneToOne(() => Restaurant, { onDelete: 'RESTRICT' })
+  restaurant: Restaurant;
+
+  @Exclude()
+  @OneToOne(() => Media, (media) => media.owner)
   image: Promise<Media>;
 
   get isVerified() {
@@ -65,7 +66,7 @@ export class Employee extends BaseEntity {
   }
 
   get isActive() {
-    return this.status === EmployeeStatus.Active;
+    return this.status === OwnerStatus.Active;
   }
 
   get isValid() {
