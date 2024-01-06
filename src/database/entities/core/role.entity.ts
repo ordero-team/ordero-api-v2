@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { ManyToOne } from 'typeorm';
+import { IsNull, ManyToOne } from 'typeorm';
 import { Restaurant } from '../owner/restaurant.entity';
 
 @CoreEntity()
@@ -33,11 +33,11 @@ export class Role extends BaseEntity {
   restaurant: Promise<Restaurant>;
 
   static async findBySlug(slug: string): Promise<Role> {
-    return Role.findOne({ where: { slug } });
+    return await Role.findOneBy({ slug });
   }
 
   static async findByRestaurant(rest: Restaurant): Promise<Role[]> {
     // find roles that belongs to company or default roles
-    return Role.find({ where: [{ restaurant_id: rest.id }, { restaurant_id: null }] });
+    return await Role.find({ where: [{ restaurant_id: IsNull() }, { restaurant_id: rest.id }] });
   }
 }

@@ -7,7 +7,7 @@ import { DataSource } from 'typeorm';
 import { AuthService } from './services/auth.service';
 import { RoleService } from './services/role.service';
 import { TaskService } from './services/task.service';
-import { JwtStrategy, TokenStrategy } from './services/token.service';
+import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
 
 @Global()
 @Module({
@@ -15,9 +15,9 @@ import { JwtStrategy, TokenStrategy } from './services/token.service';
   providers: [
     TaskService,
     JwtStrategy,
-    RoleService,
     AuthService,
-    TokenStrategy,
+    RoleService,
+    JwtOwnerStrategy,
     {
       provide: DataSource,
       useFactory: async () => {
@@ -25,6 +25,6 @@ import { JwtStrategy, TokenStrategy } from './services/token.service';
       },
     },
   ],
-  exports: [TaskService, RoleService, AuthService, JwtStrategy, TokenStrategy, DataSource, RBAcModule],
+  exports: [TaskService, RoleService, AuthService, JwtStrategy, JwtOwnerStrategy, DataSource, RBAcModule],
 })
 export class CoreModule {}

@@ -1,6 +1,6 @@
 import { BaseEntity } from '@db/entities/base/base';
 import { Media } from '@db/entities/core/media.entity';
-import { CoreEntity, ForeignColumn, NotNullColumn, PhoneColumn, StatusColumn } from '@lib/typeorm/decorators';
+import { CoreEntity, EmailColumn, ForeignColumn, NotNullColumn, PhoneColumn, StatusColumn } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
 import { Column, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Order } from '../core/order.entity';
@@ -24,6 +24,12 @@ export class Restaurant extends BaseEntity {
 
   @Column()
   slug: string;
+
+  @EmailColumn()
+  email: string;
+
+  @Column({ nullable: true })
+  website: string;
 
   @StatusColumn()
   status: RestaurantStatus;

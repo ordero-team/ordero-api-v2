@@ -26,14 +26,16 @@ export class RoleService implements IDynamicStorageRbac {
       combinedGrants[role] = uniq([...perms, ...DefaultPerms]);
     }
 
+    const permissions = {
+      [PermOwner.Profile]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermOwner.Restaurant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+    };
+
     return {
       filters: {},
       grants: combinedGrants,
       roles: Object.keys(combinedGrants),
-      permissions: {
-        [PermOwner.Profile]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
-        [PermOwner.Restaurant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
-      },
+      permissions,
     } as any;
   }
 }

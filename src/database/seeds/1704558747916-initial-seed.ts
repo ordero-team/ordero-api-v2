@@ -1,9 +1,7 @@
 import { config } from '@lib/helpers/config.helper';
 import { MigrationInterface } from 'typeorm';
 
-export class initial1660303494536 implements MigrationInterface {
-  name = 'initial1660303494536';
-
+export class initialSeed1704558747916 implements MigrationInterface {
   public async up(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Importer = require('mysql-import');

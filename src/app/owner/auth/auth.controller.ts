@@ -45,7 +45,7 @@ export class AuthController {
   @Post('/login')
   async postLogin(@Body() body, @Res() response) {
     const rules = {
-      email: 'required|email',
+      username: 'required',
       password: 'required',
     };
     const validation = Validator.init({ ...body }, rules);
@@ -53,9 +53,14 @@ export class AuthController {
       throw new ValidationException(validation);
     }
 
-    const user = await Owner.findOne({ where: { email: body.email } });
-    if (!user || !(await hashAreEqual(user.password, body.password))) {
-      throw new UnauthorizedException('Email or password is incorrect');
+    const user = await Owner.findOne({ where: [{ email: body.username }, { phone: body.username }] });
+
+    if (!user) {
+      throw new UnauthorizedException('Email or phone number are not found');
+    }
+
+    if (!(await hashAreEqual(user.password, body.password))) {
+      throw new UnauthorizedException('Password is incorrect');
     }
 
     if (user.isActive) {
@@ -77,7 +82,6 @@ export class AuthController {
 
     return response.data({
       access_token: JWT.sign(payload, jwt.secret, singOptions),
-      pubsub_token: JWT.sign(payload, config.get('CENTRIFUGO_SECRET')),
     });
   }
 
@@ -87,7 +91,7 @@ export class AuthController {
       email: 'required|email',
       name: 'required|safe_text|min:3|max:100',
       phone: 'required|phone',
-      company: 'required|min:3|max:100',
+      restaurant: 'required|min:3|max:100',
       password: 'required|confirmed|min:6',
     };
     const validation = Validator.init(body, rules);
@@ -106,10 +110,11 @@ export class AuthController {
       throw new BadRequestException('Phone has already been used');
     }
 
-    const data = request.only(['email', 'name', 'password', 'phone', 'company']);
+    const data = request.only(['email', 'name', 'password', 'phone', 'restaurant']);
     const user = await this.service.register(data);
-    const token = await this.service.login(user);
-    return response.data(token);
+    // const token = await this.service.login(user);
+    // return response.data(token);
+    return response.data(user);
   }
 
   @Delete('/logout')

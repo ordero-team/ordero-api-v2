@@ -43,11 +43,18 @@ export class Owner extends BaseEntity {
   @Column()
   verification_token: string;
 
+  @Exclude()
+  @Column()
+  verification_code: string;
+
   @DateTimeColumn()
   verified_at: Date;
 
   @StatusColumn()
   status: OwnerStatus;
+
+  @DateTimeColumn()
+  last_login_at: Date;
 
   @Exclude()
   @ForeignColumn()

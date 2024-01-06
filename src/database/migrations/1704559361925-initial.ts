@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class initial1703763595953 implements MigrationInterface {
-  name = 'initial1703763595953';
+export class initial1704559361925 implements MigrationInterface {
+  name = 'initial1704559361925';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE \`owner\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`name\` varchar(255) NOT NULL, \`phone\` varchar(25) NOT NULL, \`email\` varchar(150) NULL, \`password\` varchar(255) NOT NULL, \`reset_token\` varchar(255) NULL, \`verification_token\` varchar(255) NULL, \`verified_at\` datetime NULL, \`status\` varchar(25) NOT NULL, \`restaurant_id\` varchar(26) NULL, UNIQUE INDEX \`REL_d099bef5ba8a112db4de25e819\` (\`restaurant_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`
+      `CREATE TABLE \`owner\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`name\` varchar(255) NOT NULL, \`phone\` varchar(25) NOT NULL, \`email\` varchar(150) NULL, \`password\` varchar(255) NOT NULL, \`reset_token\` varchar(255) NULL, \`verification_token\` varchar(255) NULL, \`verification_code\` varchar(255) NULL, \`verified_at\` datetime NULL, \`status\` varchar(25) NOT NULL, \`last_login_at\` datetime NULL, \`restaurant_id\` varchar(26) NULL, UNIQUE INDEX \`REL_d099bef5ba8a112db4de25e819\` (\`restaurant_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`
     );
     await queryRunner.query(
       `CREATE TABLE \`category\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`name\` varchar(255) NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`
@@ -41,7 +41,7 @@ export class initial1703763595953 implements MigrationInterface {
       `CREATE TABLE \`table\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`number\` varchar(255) NOT NULL, \`status\` varchar(255) NOT NULL, \`restaurant_id\` varchar(26) NULL, \`location_id\` varchar(26) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`
     );
     await queryRunner.query(
-      `CREATE TABLE \`restaurant\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`name\` varchar(255) NOT NULL, \`phone\` varchar(25) NULL, \`slug\` varchar(255) NOT NULL, \`status\` varchar(25) NOT NULL, \`owner_id\` varchar(26) NULL, UNIQUE INDEX \`REL_fe7a22ecf454b7168b5a37fbdc\` (\`owner_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`
+      `CREATE TABLE \`restaurant\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`name\` varchar(255) NOT NULL, \`phone\` varchar(25) NULL, \`slug\` varchar(255) NOT NULL, \`email\` varchar(150) NULL, \`website\` varchar(255) NULL, \`status\` varchar(25) NOT NULL, \`owner_id\` varchar(26) NULL, UNIQUE INDEX \`REL_fe7a22ecf454b7168b5a37fbdc\` (\`owner_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`
     );
     await queryRunner.query(
       `CREATE TABLE \`location\` (\`id\` varchar(26) NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`name\` varchar(255) NOT NULL, \`is_default\` tinyint NULL DEFAULT '0', \`restaurant_id\` varchar(26) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`

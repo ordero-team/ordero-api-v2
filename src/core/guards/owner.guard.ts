@@ -14,12 +14,13 @@ const validateRestaurant = async (request: any) => {
     throw new TokenException('Getting user was failed');
   }
 
-  const restaurantId = get(request, 'params.company_id') || get(request, 'headers.x-company-id');
+  const restaurantId =
+    get(request, 'params.restaurant_id') || get(request, 'headers.x-restaurant-id') || get(user, 'restaurant_id');
   if (!restaurantId) {
-    throw new GuardException('Company ID is not found');
+    throw new GuardException('Restaurant is not found');
   }
 
-  const restaurant = await Restaurant.findOne(restaurantId);
+  const restaurant = await Restaurant.findOne({ where: { id: restaurantId } });
   if (!restaurant) {
     throw new TokenException('Getting restaurant was failed');
   }

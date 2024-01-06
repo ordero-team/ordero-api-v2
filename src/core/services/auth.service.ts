@@ -50,7 +50,7 @@ export class AuthService {
       user.password = await hash(payload.password);
       user.name = payload.name;
       user.phone = payload.phone;
-      // user.verification_code = String(Math.floor(10000 + Math.random() * 90000));
+      user.verification_code = String(Math.floor(10000 + Math.random() * 90000));
       user.status = OwnerStatus.Verify;
       await manager.getRepository(Owner).save(user);
 
