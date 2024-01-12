@@ -15,7 +15,7 @@ export class RestaurantController {
   @Get()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Restaurant}@${PermAct.R}`)
-  async me(@Rest() rest, @Res() response) {
+  async index(@Rest() rest, @Res() response) {
     return response.item(rest, RestaurantTransformer);
   }
 
