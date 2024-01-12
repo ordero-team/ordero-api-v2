@@ -55,12 +55,15 @@ export class AuthService {
       await manager.getRepository(Owner).save(user);
 
       // create company
-      const company = new Restaurant();
-      company.name = payload.name;
-      company.slug = slug;
-      company.owner_id = user.id;
-      company.status = RestaurantStatus.Active;
-      await manager.getRepository(Restaurant).save(company);
+      const restaurant = new Restaurant();
+      restaurant.name = payload.name;
+      restaurant.slug = slug;
+      restaurant.owner_id = user.id;
+      restaurant.status = RestaurantStatus.Active;
+      await manager.getRepository(Restaurant).save(restaurant);
+
+      user.restaurant_id = restaurant.id;
+      await manager.getRepository(Owner).save(user);
     });
 
     await this.sendVerificationEmail(user);

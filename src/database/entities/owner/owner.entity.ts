@@ -76,6 +76,10 @@ export class Owner extends BaseEntity {
     return this.status === OwnerStatus.Active;
   }
 
+  get isBlocked() {
+    return this.status === OwnerStatus.Inactive;
+  }
+
   get isValid() {
     return this.isVerified && this.isActive;
   }

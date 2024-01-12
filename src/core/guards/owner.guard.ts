@@ -20,7 +20,7 @@ const validateRestaurant = async (request: any) => {
     throw new GuardException('Restaurant is not found');
   }
 
-  const restaurant = await Restaurant.findOne({ where: { id: restaurantId } });
+  const restaurant = await Restaurant.findOneBy({ id: restaurantId });
   if (!restaurant) {
     throw new TokenException('Getting restaurant was failed');
   }

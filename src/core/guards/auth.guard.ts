@@ -79,7 +79,7 @@ class BaseAuthGuard {
       throw err || new TokenException(info.message || 'Invalid token!');
     }
 
-    if (!user.isValid) {
+    if (user.isBlocked) {
       throw new TokenException('Invalid account, please contact support!');
     }
 
