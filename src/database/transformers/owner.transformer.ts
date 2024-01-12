@@ -8,10 +8,6 @@ export class OwnerTransformer extends TransformerAbstract {
     return ['restaurant'];
   }
 
-  get defaultInclude() {
-    return ['restaurant'];
-  }
-
   transform(entity: Owner) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { image, ...rest } = entity.toJSON();

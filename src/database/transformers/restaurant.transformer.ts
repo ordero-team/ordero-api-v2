@@ -5,7 +5,7 @@ import { OwnerTransformer } from './owner.transformer';
 
 export class RestaurantTransformer extends TransformerAbstract {
   get availableInclude() {
-    return ['address', 'owner'];
+    return ['owner'];
   }
 
   transform(entity: Restaurant) {
