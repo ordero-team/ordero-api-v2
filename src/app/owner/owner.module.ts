@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { OwnerAuthModule } from './auth/auth.module';
-import { OwnerProfileModule } from './profile/profile.module';
+import { AuthModule } from './auth/auth.module';
+import { ProfileModule } from './profile/profile.module';
+import { RestaurantModule } from './restaurant/restaurant.module';
 
 @Module({
-  imports: [OwnerAuthModule, OwnerProfileModule],
+  imports: [AuthModule, ProfileModule, RestaurantModule],
   controllers: [],
   providers: [],
 })

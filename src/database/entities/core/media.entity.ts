@@ -1,4 +1,5 @@
 import { BaseEntity } from '@db/entities/base/base';
+import { IMedia } from '@db/interfaces/media.interface';
 import { Column, CoreEntity, ForeignColumn } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
@@ -46,4 +47,15 @@ export class Media extends BaseEntity {
   @JoinColumn()
   @ManyToOne(() => Product, (product) => product.images)
   product: Product;
+
+  static getImage(media: Media): IMedia {
+    if (!media) {
+      return null;
+    }
+
+    return {
+      id: media.id,
+      original: media.url,
+    };
+  }
 }
