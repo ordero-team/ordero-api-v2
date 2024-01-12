@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
+import { OwnerLocationModule } from './location/location.module';
 import { RestaurantController } from './restaurant.controller';
 
 @Module({
-  imports: [],
+  imports: [OwnerLocationModule],
   controllers: [RestaurantController],
   providers: [],
 })
-export class RestaurantModule {}
+export class OwnerRestaurantModule {}
