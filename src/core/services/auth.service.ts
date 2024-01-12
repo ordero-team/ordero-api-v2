@@ -4,14 +4,16 @@ import { Owner, OwnerStatus } from '@db/entities/owner/owner.entity';
 import { Restaurant, RestaurantStatus } from '@db/entities/owner/restaurant.entity';
 import { config } from '@lib/helpers/config.helper';
 import { hash, hashAreEqual } from '@lib/helpers/encrypt.helper';
+import Logger from '@lib/logger/logger.library';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { uuid } from '@lib/uid/uuid.library';
+import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as JWT from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
-  // constructor(private mail: MailerService) {}
+  constructor(private mail: MailerService) {}
 
   async attempt(username: string, pass: string): Promise<Owner | null> {
     const user = await Owner.findOne({ where: [{ email: username }, { phone: username }] });
@@ -52,6 +54,7 @@ export class AuthService {
       user.phone = payload.phone;
       user.verification_code = String(Math.floor(10000 + Math.random() * 90000));
       user.status = OwnerStatus.Verify;
+      user.role_slug = role.slug;
       await manager.getRepository(Owner).save(user);
 
       // create company
@@ -73,18 +76,18 @@ export class AuthService {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async sendVerificationEmail(user: Owner, changeEmail = false): Promise<void> {
-    // this.mail
-    //   .sendMail({
-    //     to: changeEmail ? user.new_email : user.email,
-    //     subject: 'Verify your email!',
-    //     template: 'register',
-    //     context: {
-    //       name: user.name,
-    //       code: user.verification_code,
-    //     },
-    //   })
-    //   .then(() => null)
-    //   .catch((error) => Logger.getInstance().notify(error));
+    this.mail
+      .sendMail({
+        to: user.email,
+        subject: 'Verify Your Account',
+        template: 'register',
+        context: {
+          name: user.name,
+          code: user.verification_code,
+        },
+      })
+      .then(() => null)
+      .catch((error) => Logger.getInstance().notify(error));
   }
 
   async forgotPassword(user: Owner): Promise<void> {

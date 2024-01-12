@@ -11,7 +11,8 @@ import {
   StatusColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { JoinColumn, OneToOne } from 'typeorm';
+import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Role } from '../core/role.entity';
 import { Restaurant } from './restaurant.entity';
 
 export enum OwnerStatus {
@@ -55,6 +56,14 @@ export class Owner extends BaseEntity {
 
   @DateTimeColumn()
   last_login_at: Date;
+
+  @Exclude()
+  @ForeignColumn()
+  role_slug: string;
+
+  @ManyToOne(() => Role, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'role_slug', referencedColumnName: 'slug' })
+  role: Promise<Role>;
 
   @Exclude()
   @ForeignColumn()

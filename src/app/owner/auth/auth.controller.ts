@@ -1,6 +1,7 @@
 import { jwt } from '@config/jwt.config';
 import { OwnerGuard } from '@core/guards/owner.guard';
 import { AuthService } from '@core/services/auth.service';
+import { PermAct, PermOwner } from '@core/services/role.service';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { StaffBlacklist } from '@db/entities/staff/blacklist.entity';
 import { StaffSession } from '@db/entities/staff/session.entity';
@@ -10,6 +11,7 @@ import { config } from '@lib/helpers/config.helper';
 import { hash, hashAreEqual } from '@lib/helpers/encrypt.helper';
 import { time } from '@lib/helpers/time.helper';
 import { Validator } from '@lib/helpers/validator.helper';
+import { Permissions } from '@lib/rbac';
 import { uuid } from '@lib/uid/uuid.library';
 import {
   BadRequestException,
@@ -35,7 +37,6 @@ export class AuthController {
     try {
       const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
       const decoded = JWT.decode(token);
-
       return { token, decoded };
     } catch (err) {
       return null;
@@ -117,11 +118,12 @@ export class AuthController {
     return response.data(user);
   }
 
+  // @TODO: Logout
   @Delete('/logout')
   @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Profile}@${PermAct.D}`)
   async deleteLogout(@Req() request, @Res() response) {
     const token = AuthController.token(request);
-
     if (token) {
       const authSession = await StaffSession.findOne({
         where: {
