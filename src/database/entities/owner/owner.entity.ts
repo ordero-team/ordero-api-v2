@@ -71,11 +71,11 @@ export class Owner extends BaseEntity {
 
   @JoinColumn()
   @OneToOne(() => Restaurant, { onDelete: 'RESTRICT' })
-  restaurant: Restaurant;
+  restaurant: Promise<Restaurant>;
 
   @Exclude()
   @OneToOne(() => Media, (media) => media.owner)
-  image: Promise<Media>;
+  image: Media;
 
   get isVerified() {
     return this.verified_at !== null;

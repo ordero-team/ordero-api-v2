@@ -4,4 +4,4 @@ import { ProfileController } from './profile.controller';
 @Module({
   controllers: [ProfileController],
 })
-export class OwnerProfileModule {}
+export class ProfileModule {}
