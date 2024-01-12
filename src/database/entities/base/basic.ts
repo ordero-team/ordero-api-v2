@@ -47,14 +47,14 @@ export class BasicEntity extends Base {
     return obj;
   }
 
-  static async findOrFailByCompany<T extends Base>(
+  static async findOrFailByRestaurant<T extends Base>(
     this: {
       new (): T;
     } & typeof Base,
     id?: string | number | Date | ObjectID,
-    company?: any
+    restaurant?: any
   ): Promise<T | undefined> {
-    const obj = await this.findOne<T>({ where: { id, company_id: company.id } } as any);
+    const obj = await this.findOne<T>({ where: { id, restaurant_id: restaurant.id } } as any);
     if (isEmpty(obj)) {
       throw new NotFoundException(`Could not find entity ${startCase(this.name).toLowerCase()} on the company`);
     }

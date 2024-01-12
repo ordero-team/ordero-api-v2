@@ -5,8 +5,3 @@ export const sentry = {
   environment: config.get('MODE'),
   release: config.get('APP_VERSION'),
 };
-
-export const datadog = {
-  apiKey: config.get('DATADOG_KEY'),
-  service: config.get('DATADOG_SERVICE'),
-};

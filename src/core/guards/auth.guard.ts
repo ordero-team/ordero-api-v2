@@ -79,7 +79,7 @@ class BaseAuthGuard {
       throw err || new TokenException(info.message || 'Invalid token!');
     }
 
-    if (!user.isValid) {
+    if (user.isBlocked) {
       throw new TokenException('Invalid account, please contact support!');
     }
 
@@ -96,6 +96,16 @@ function createAuthGuard(type: string | string[] = 'jwt'): Type<CanActivate> {
 }
 
 export const AuthGuard: (type?: string | string[]) => Type<IAuthGuard> = memoize(createAuthGuard);
+
+function createOwnerAuthGuard(type: string | string[] = 'jwt-owner'): Type<CanActivate> {
+  class MixinAuthGuard extends BaseAuthGuard implements CanActivate {
+    protected type: string | string[] = type;
+  }
+
+  return mixin(MixinAuthGuard);
+}
+
+export const OwnerAuthGuard: (type?: string | string[]) => Type<IAuthGuard> = memoize(createOwnerAuthGuard);
 
 function createBasicAuthGuard(type: string | string[] = 'jwt'): Type<CanActivate> {
   class MixinAuthGuard extends BaseAuthGuard implements CanActivate {

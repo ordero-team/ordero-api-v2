@@ -1,0 +1,82 @@
+import { Role } from '@db/entities/core/role.entity';
+import { Owner } from '@db/entities/owner/owner.entity';
+import { Restaurant } from '@db/entities/owner/restaurant.entity';
+import { GuardException } from '@lib/exceptions/guard.exception';
+import { TokenException } from '@lib/exceptions/token.exception';
+import { ParamsFilter, RBAC_REQUEST_FILTER, RbacService } from '@lib/rbac';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { get } from 'lodash';
+
+const validateRestaurant = async (request: any) => {
+  const user: Owner = request.user;
+  if (!user) {
+    throw new TokenException('Getting user was failed');
+  }
+
+  const restaurantId =
+    get(request, 'params.restaurant_id') || get(request, 'headers.x-restaurant-id') || get(user, 'restaurant_id');
+  if (!restaurantId) {
+    throw new GuardException('Restaurant is not found');
+  }
+
+  const restaurant = await Restaurant.findOneBy({ id: restaurantId });
+  if (!restaurant) {
+    throw new TokenException('Getting restaurant was failed');
+  }
+
+  const roles = await Role.findByRestaurant(restaurant);
+  const role = roles.find((row) => row.slug === 'owner');
+  if (!role) {
+    throw new GuardException('Getting role was failed');
+  }
+
+  return { user, restaurant, roles, role };
+};
+
+export const setupPermission = async (request) => {
+  const restaurant = await validateRestaurant(request);
+
+  // assign additional data to request object
+  Object.assign(request, {
+    current: {
+      restaurant: restaurant.restaurant,
+      role: restaurant.role,
+    },
+  });
+
+  // filter based on available modules on plan
+  const grants = restaurant.roles.reduce((acc, cur) => {
+    acc[cur.slug] = cur.permissions || [];
+    return acc;
+  }, {});
+
+  // assign grants to request helper
+  (request as any).requestContext.set('grants', grants);
+
+  const filter = new ParamsFilter();
+  filter.setParam(RBAC_REQUEST_FILTER, { ...request });
+
+  return { ...restaurant, filter };
+};
+
+@Injectable()
+export class OwnerGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector, private readonly rbacService: RbacService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+
+    const permissions = this.reflector.get<string[]>('Permissions', context.getHandler());
+    if (!permissions) {
+      throw new GuardException('Bad permission');
+    }
+
+    const { role, filter } = await setupPermission(request);
+    if (!(await this.rbacService.getRole(role.slug, filter)).can(...permissions)) {
+      throw new GuardException('Forbidden resource');
+    }
+
+    return true;
+  }
+}

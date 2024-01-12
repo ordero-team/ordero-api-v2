@@ -6,9 +6,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { RouterModule } from 'nest-router';
 import { AppController } from './app.controller';
 import { routes } from './app.routes';
+import { OwnerModule } from './app/owner/owner.module';
 
 @Module({
-  imports: [RouterModule.forRoutes(routes), ScheduleModule.forRoot(), MailerModule.forRoot(mail), CoreModule],
+  imports: [RouterModule.forRoutes(routes), ScheduleModule.forRoot(), MailerModule.forRoot(mail), CoreModule, OwnerModule],
   controllers: [AppController],
   providers: [],
 })

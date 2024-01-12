@@ -5,27 +5,24 @@ import {
   CoreEntity,
   DateTimeColumn,
   EmailColumn,
+  ForeignColumn,
   NotNullColumn,
   PhoneColumn,
   StatusColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { OneToOne } from 'typeorm';
+import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Role } from '../core/role.entity';
+import { Restaurant } from './restaurant.entity';
 
-export enum EmployeeStatus {
+export enum OwnerStatus {
   Verify = 'verify',
   Active = 'active',
   Inactive = 'inactive',
 }
 
-export enum EmployeeRole {
-  Owner = 'owner',
-  Cashier = 'cashier',
-  Waiter = 'waiter',
-}
-
 @CoreEntity()
-export class Employee extends BaseEntity {
+export class Owner extends BaseEntity {
   @NotNullColumn()
   name: string;
 
@@ -34,9 +31,6 @@ export class Employee extends BaseEntity {
 
   @EmailColumn({ nullable: true })
   email: string;
-
-  @NotNullColumn()
-  role: EmployeeRole;
 
   @Exclude()
   @NotNullColumn()
@@ -50,14 +44,37 @@ export class Employee extends BaseEntity {
   @Column()
   verification_token: string;
 
+  @Exclude()
+  @Column()
+  verification_code: string;
+
   @DateTimeColumn()
   verified_at: Date;
 
   @StatusColumn()
-  status: EmployeeStatus;
+  status: OwnerStatus;
+
+  @DateTimeColumn()
+  last_login_at: Date;
 
   @Exclude()
-  @OneToOne(() => Media, (media) => media.employee)
+  @ForeignColumn()
+  role_slug: string;
+
+  @ManyToOne(() => Role, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'role_slug', referencedColumnName: 'slug' })
+  role: Promise<Role>;
+
+  @Exclude()
+  @ForeignColumn()
+  restaurant_id: string;
+
+  @JoinColumn()
+  @OneToOne(() => Restaurant, { onDelete: 'RESTRICT' })
+  restaurant: Restaurant;
+
+  @Exclude()
+  @OneToOne(() => Media, (media) => media.owner)
   image: Promise<Media>;
 
   get isVerified() {
@@ -65,7 +82,11 @@ export class Employee extends BaseEntity {
   }
 
   get isActive() {
-    return this.status === EmployeeStatus.Active;
+    return this.status === OwnerStatus.Active;
+  }
+
+  get isBlocked() {
+    return this.status === OwnerStatus.Inactive;
   }
 
   get isValid() {

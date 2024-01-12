@@ -11,10 +11,14 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const fastify = new InstanceFastify();
   const httpAdapter = await fastify.init();
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const fastifyListRoutes = require('fastify-list-routes');
 
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, httpAdapter, {
     logger: WinstonLogger,
   });
+
+  await app.register(fastifyListRoutes, { colors: true });
 
   // ============== Middleware ==============
   app.useGlobalFilters(new ExceptionFilter());
@@ -35,7 +39,11 @@ async function bootstrap() {
   });
 
   // ============== run server ==============
-  await app.listen(Number(config.getPort()), '0.0.0.0');
+  await app.listen(Number(config.getPort()), '0.0.0.0', (err, address) => {
+    if (err) throw err;
+
+    console.log(`Server is now listening on ${address}`);
+  });
 }
 
 void bootstrap();

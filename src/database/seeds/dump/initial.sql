@@ -1,37 +1,23 @@
---
--- Dumping data for table `category`
---
 
-INSERT INTO `category` (`id`, `created_at`, `code`, `name`, `description`) VALUES
-('01GA8ANZBGS57WNG9KPERKHQX8', '2022-08-12 06:08:21.380182', 'travel', 'Asuransi Perjalanan', 'Lorem ipsum dolor sit amet');
+SET FOREIGN_KEY_CHECKS=0;
 
 --
--- Dumping data for table `provider`
+-- Dumping data for table `role`
 --
 
-INSERT INTO `provider` (`id`, `created_at`, `code`, `name`, `email`, `phone`) VALUES
-('01GA89DRGBTPSRHXG4344EZC45', '2022-08-12 05:46:23.650390', 'sompo', 'PT Asuransi SOMPO', 'support@sompo.com', '+628118500889'),
-('01GA8FBHDA2EB3GXW0MWHT8ZSC', '2022-08-12 07:30:02.320454', 'axa', 'PT Mandiri AXA General Insurance', 'customer.general@axa-mandiri.co.id', '1500733');
+INSERT INTO `role` (`id`, `slug`, `permissions`, `created_at`) VALUES
+('01EP4ZDWCZCHVFA1ZHV13YGRJZ', 'owner', '[\"restaurant@read\", \"restaurant@create\", \"restaurant@update\", \"restaurant@delete\"]', '2023-01-06 16:00:00.501148');
 
 --
--- Dumping data for table `user`
+-- Dumping data for table `owner`
 --
 
-INSERT INTO `user` (`id`, `created_at`, `api_key`, `email`, `name`, `password`, `phone`, `reset_token`, `verification_token`, `verified_at`, `status`) VALUES
-('01GA7W7FP6FH1RK4V77M8ZB3DJ', '2022-08-12 01:55:46.538717', 'ASKT-KEY-V5C518LeJdeB2bDRDtJh9D', 'gaghan430@gmail.com', 'Dodik Gaghan', '$2a$10$d4poVM61VRxegwUxYDMqIeWV45ESvAbNtOLnVs4xglJQOsk3wwmou', '+6281230420110', NULL, NULL, '2022-08-12 01:58:34', 'active');
+INSERT INTO `owner` (`id`, `name`, `email`, `phone`, `password`, `verification_code`, `status`, `verified_at`, `last_login_at`, `created_at`, `restaurant_id`) VALUES
+('01F2KFTXZNS01CJQCGNPJKXA1N', 'Yudha', 'owner@yuppey.com', '+6281931006841', '$2a$10$9/R3pR5rP1gnnG0n06pbEORY39fXfuJ2.eJkdqvoi5oDScm1gcHRi', NULL, 'verify', NULL, NULL, '2023-01-06 16:00:00.501148', '01F2KFTXX9W2Y630FKYSSC9NSQ');
 
 --
--- Dumping data for table `product`
+-- Dumping data for table `restaurant`
 --
 
-INSERT INTO `product` (`id`, `created_at`, `code`, `name`, `description`, `broker`, `category_id`, `provider_id`) VALUES
-('01GA9CHGMFN1592AM5W1DG5EVA', '2022-08-12 16:00:06.831337', 'sompo-travel-premiro', 'Auransi Perjalanan', 'Lorem ipsum', 'premiro', '01GA8ANZBGS57WNG9KPERKHQX8', '01GA89DRGBTPSRHXG4344EZC45');
-
---
--- Dumping data for table `product_variant`
---
-
-INSERT INTO `product_variant` (`id`, `created_at`, `code`, `name`, `price`, `level`, `status`, `product_id`) VALUES
-('01GA9CHGMWNTDJ9JT9CZQABW5P', '2022-08-12 16:00:06.842737', 'economy', 'Ekonomi', '2500.00', 0, 'active', '01GA9CHGMFN1592AM5W1DG5EVA'),
-('01GA9CHGN6YH729Y9SZBACK1T2', '2022-08-12 16:00:06.851348', 'business', 'Bisnis', '3500.00', 1, 'active', '01GA9CHGMFN1592AM5W1DG5EVA'),
-('01GA9CHGNFT6VZMBD8EPVZ8RVH', '2022-08-12 16:00:06.860703', 'executive', 'Eksekutif', '4500.00', 3, 'active', '01GA9CHGMFN1592AM5W1DG5EVA');
+INSERT INTO `restaurant` (`id`, `name`, `slug`, `email`, `phone`, `website`, `status`, `created_at`, `owner_id`) VALUES
+('01F2KFTXX9W2Y630FKYSSC9NSQ', 'Yuppey', 'yuppey', NULL, NULL, NULL, 'active', '2023-01-06 16:00:00.501148', '01F2KFTXZNS01CJQCGNPJKXA1N');
