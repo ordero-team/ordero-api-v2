@@ -4,6 +4,7 @@ import { OwnerGuard } from '@core/guards/owner.guard';
 import { AuthService } from '@core/services/auth.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { Owner, OwnerStatus } from '@db/entities/owner/owner.entity';
+import { OwnerTransformer } from '@db/transformers/owner.transformer';
 import { NotPermittedException } from '@lib/exceptions/not-permitted.exception';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { time } from '@lib/helpers/time.helper';
@@ -20,7 +21,7 @@ export class ProfileController {
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Profile}@${PermAct.R}`)
   async me(@Me() me, @Res() response) {
-    return response.data(me);
+    return response.item(me, OwnerTransformer);
   }
 
   @Post('/resend-code')
