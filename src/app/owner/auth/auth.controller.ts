@@ -64,7 +64,7 @@ export class AuthController {
       throw new UnauthorizedException('Password is incorrect');
     }
 
-    if (user.isActive) {
+    if (!user.isActive) {
       throw new UnauthorizedException('Your account was inactive by system');
     }
 

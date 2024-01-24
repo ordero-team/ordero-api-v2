@@ -14,9 +14,10 @@ export enum PermOwner {
   Profile = 'profile',
   Restaurant = 'restaurant',
   Location = 'location',
+  Table = 'table',
 }
 
-export const DefaultPerms = [PermOwner.Profile, PermOwner.Restaurant, PermOwner.Location];
+export const DefaultPerms = [PermOwner.Profile, PermOwner.Restaurant];
 
 @Injectable()
 export class RoleService implements IDynamicStorageRbac {
@@ -31,6 +32,7 @@ export class RoleService implements IDynamicStorageRbac {
       [PermOwner.Profile]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Restaurant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Location]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermOwner.Table]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
     };
 
     return {

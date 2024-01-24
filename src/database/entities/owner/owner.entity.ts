@@ -13,6 +13,7 @@ import {
 import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Role } from '../core/role.entity';
+import { Location } from './location.entity';
 import { Restaurant } from './restaurant.entity';
 
 export enum OwnerStatus {
@@ -72,6 +73,13 @@ export class Owner extends BaseEntity {
   @JoinColumn()
   @OneToOne(() => Restaurant, { onDelete: 'RESTRICT' })
   restaurant: Promise<Restaurant>;
+
+  @Exclude()
+  @ForeignColumn()
+  location_id: string;
+
+  @ManyToOne(() => Location, { onDelete: 'SET NULL' })
+  location: Promise<Location>;
 
   @Exclude()
   @OneToOne(() => Media, (media) => media.owner)
