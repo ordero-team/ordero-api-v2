@@ -1,8 +1,8 @@
-import { Owner } from '@db/entities/owner/owner.entity';
+import { Location } from '@db/entities/owner/location.entity';
 import { TransformerAbstract } from '@lib/transformer/abstract.transformer';
 
 export class LocationTransformer extends TransformerAbstract {
-  transform(entity: Owner) {
+  transform(entity: Location) {
     return entity.toJSON();
   }
 }

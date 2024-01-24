@@ -6,6 +6,7 @@ import { Location } from '@db/entities/owner/location.entity';
 import { LocationTransformer } from '@db/transformers/location.transformer';
 import { PlainTransformer } from '@db/transformers/plain.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
+import { isTrue } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
@@ -30,7 +31,7 @@ export class LocationController {
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Location}@${PermAct.R}`)
   async show(@Rest() rest, @Res() response, @Param() param) {
-    const location = await Location.findOneBy({ restaurant_id: rest.id, id: param.location_id });
+    const location = await Location.findOneByOrFail({ restaurant_id: rest.id, id: param.location_id });
     await response.item(location, LocationTransformer);
   }
 
@@ -49,7 +50,7 @@ export class LocationController {
 
     const loc = new Location();
     loc.name = body.name;
-    loc.is_default = false;
+    loc.is_default = isTrue(body.is_default);
     loc.restaurant_id = rest.id;
     await loc.save();
 
@@ -75,7 +76,7 @@ export class LocationController {
 
     const loc = await Location.findOneByOrFail({ id: param.location_id });
     loc.name = body.name;
-    loc.is_default = body.is_default;
+    loc.is_default = isTrue(body.is_default);
     await loc.save();
 
     return response.item(loc, LocationTransformer);

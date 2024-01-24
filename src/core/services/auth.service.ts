@@ -2,7 +2,6 @@ import { jwt } from '@config/jwt.config';
 import { Role } from '@db/entities/core/role.entity';
 import { Owner, OwnerStatus } from '@db/entities/owner/owner.entity';
 import { Restaurant, RestaurantStatus } from '@db/entities/owner/restaurant.entity';
-import { config } from '@lib/helpers/config.helper';
 import { hash, hashAreEqual } from '@lib/helpers/encrypt.helper';
 import Logger from '@lib/logger/logger.library';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
@@ -32,7 +31,6 @@ export class AuthService {
     const payload = { email: user.email, phone: user.phone, sub: user.id };
     return {
       access_token: JWT.sign(payload, jwt.secret, jwt.signOptions),
-      pubsub_token: JWT.sign(payload, config.get('CENTRIFUGO_SECRET')),
     };
   }
 
