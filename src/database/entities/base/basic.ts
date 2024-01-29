@@ -56,7 +56,7 @@ export class BasicEntity extends Base {
   ): Promise<T | undefined> {
     const obj = await this.findOne<T>({ where: { id, restaurant_id: restaurant.id } } as any);
     if (isEmpty(obj)) {
-      throw new NotFoundException(`Could not find entity ${startCase(this.name).toLowerCase()} on the company`);
+      throw new NotFoundException(`Could not find entity ${startCase(this.name).toLowerCase()} on the restaurant`);
     }
 
     return obj;
