@@ -1,4 +1,5 @@
 import { Role } from '@db/entities/core/role.entity';
+import { Location } from '@db/entities/owner/location.entity';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { Restaurant } from '@db/entities/owner/restaurant.entity';
 import { GuardException } from '@lib/exceptions/guard.exception';
@@ -31,22 +32,28 @@ const validateRestaurant = async (request: any) => {
     throw new GuardException('Getting role was failed');
   }
 
-  return { user, restaurant, roles, role };
+  let location: Location = null;
+  if (user.location_id) {
+    location = await Location.findOneBy({ id: user.location_id });
+  }
+
+  return { user, restaurant, roles, role, location };
 };
 
 export const setupPermission = async (request) => {
-  const restaurant = await validateRestaurant(request);
+  const { restaurant, role, roles, location } = await validateRestaurant(request);
 
   // assign additional data to request object
   Object.assign(request, {
     current: {
-      restaurant: restaurant.restaurant,
-      role: restaurant.role,
+      restaurant: restaurant,
+      role,
+      location,
     },
   });
 
   // filter based on available modules on plan
-  const grants = restaurant.roles.reduce((acc, cur) => {
+  const grants = roles.reduce((acc, cur) => {
     acc[cur.slug] = cur.permissions || [];
     return acc;
   }, {});
@@ -57,7 +64,7 @@ export const setupPermission = async (request) => {
   const filter = new ParamsFilter();
   filter.setParam(RBAC_REQUEST_FILTER, { ...request });
 
-  return { ...restaurant, filter };
+  return { restaurant, role, roles, location, filter };
 };
 
 @Injectable()
