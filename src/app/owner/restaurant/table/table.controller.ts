@@ -6,13 +6,13 @@ import { PermAct, PermOwner } from '@core/services/role.service';
 import { Location } from '@db/entities/owner/location.entity';
 import { Restaurant } from '@db/entities/owner/restaurant.entity';
 import { Table, TableStatus } from '@db/entities/owner/table.entity';
-import { PlainTransformer } from '@db/transformers/plain.transformer';
 import { TableTransformer } from '@db/transformers/table.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Not } from 'typeorm';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
@@ -30,7 +30,7 @@ export class TableController {
 
     const data = await tables.search().sort().getPaged();
 
-    await response.paginate(data, PlainTransformer);
+    await response.paginate(data, TableTransformer);
   }
 
   @Get('/:table_id')
@@ -57,6 +57,11 @@ export class TableController {
     }
 
     const loc = await Location.findOneByOrFail({ id: body.location_id });
+
+    const tableExist = await Table.exists({ where: { number: body.number, restaurant_id: rest.id, location_id: loc.id } });
+    if (tableExist) {
+      throw new BadRequestException('Table has already existed.');
+    }
 
     const table = new Table();
     table.number = body.number;
@@ -87,10 +92,18 @@ export class TableController {
     }
 
     const table = await Table.findOneByOrFail({ id: param.table_id });
+
+    const loc = await Location.findOneByOrFail({ id: table.location_id });
+
+    const tableExist = await Table.exists({
+      where: { number: body.number, restaurant_id: rest.id, location_id: loc.id, id: Not(table.id) },
+    });
+    if (tableExist) {
+      throw new BadRequestException('Table has already existed.');
+    }
+
     table.number = body.number;
     table.status = body.status;
-    table.location_id = body.location_id;
-    table.restaurant_id = rest.id;
     await table.save();
 
     return response.item(table, TableTransformer);

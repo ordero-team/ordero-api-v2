@@ -4,13 +4,13 @@ import { OwnerGuard } from '@core/guards/owner.guard';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { Location } from '@db/entities/owner/location.entity';
 import { LocationTransformer } from '@db/transformers/location.transformer';
-import { PlainTransformer } from '@db/transformers/plain.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { isTrue } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Not } from 'typeorm';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
@@ -24,7 +24,7 @@ export class LocationController {
       .search()
       .sort()
       .getPaged();
-    await response.paginate(locations, PlainTransformer);
+    await response.paginate(locations, LocationTransformer);
   }
 
   @Get('/:location_id')
@@ -46,6 +46,11 @@ export class LocationController {
     const validation = Validator.init(body, rules);
     if (validation.fails()) {
       throw new ValidationException(validation);
+    }
+
+    const locationExist = await Location.exists({ where: { name: body.name, restaurant_id: rest.id } });
+    if (locationExist) {
+      throw new BadRequestException('Location has already existed.');
     }
 
     const loc = new Location();
@@ -72,6 +77,13 @@ export class LocationController {
 
     if (!param.location_id) {
       throw new BadRequestException();
+    }
+
+    const locationExist = await Location.exists({
+      where: { name: body.name, restaurant_id: rest.id, id: Not(param.location_id) },
+    });
+    if (locationExist) {
+      throw new BadRequestException('Location has already existed.');
     }
 
     const loc = await Location.findOneByOrFail({ id: param.location_id });

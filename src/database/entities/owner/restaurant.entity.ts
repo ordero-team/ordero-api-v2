@@ -4,6 +4,7 @@ import { CoreEntity, EmailColumn, ForeignColumn, NotNullColumn, PhoneColumn, Sta
 import { Exclude } from 'class-transformer';
 import { Column, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Order } from '../core/order.entity';
+import { Category } from './category.entity';
 import { Location } from './location.entity';
 import { Owner } from './owner.entity';
 import { ProductStock } from './product-stock.entity';
@@ -61,4 +62,8 @@ export class Restaurant extends BaseEntity {
   @Exclude()
   @OneToMany(() => Order, (order) => order.restaurant)
   orders: Promise<Order[]>;
+
+  @Exclude()
+  @OneToMany(() => Category, (cate) => cate.restaurant)
+  categories: Promise<Category[]>;
 }
