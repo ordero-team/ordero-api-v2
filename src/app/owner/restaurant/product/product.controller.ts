@@ -89,27 +89,27 @@ export class ProductController {
         await manager.getRepository(ProductCategory).save(pcats);
       }
 
+      const pvars: ProductVariant[] = [];
+
+      // Create default variant for single product
+      const pvar = new ProductVariant();
+      pvar.product_id = prod.id;
+      pvar.price = prod.price;
+      pvar.status = VariantStatus.Available;
+      pvars.push(pvar);
+
       // Save Variants
       if (variants.length > 0) {
-        const pvars: ProductVariant[] = [];
         for (const variant of variants) {
           const pvar = new ProductVariant();
           pvar.status = variant.status;
           pvar.product_id = prod.id;
           pvar.variant_id = variant.id;
           pvar.price = variant.price;
-          pvars.push(pvar);
         }
-
-        await manager.getRepository(ProductVariant).save(pvars);
-      } else {
-        // Create default variant for single product
-        const pvar = new ProductVariant();
-        pvar.product_id = prod.id;
-        pvar.price = prod.price;
-        pvar.status = VariantStatus.Available;
-        await manager.getRepository(ProductVariant).save(pvar);
       }
+
+      await manager.getRepository(ProductVariant).save(pvars);
     });
 
     return response.item(prod, ProductTransformer);

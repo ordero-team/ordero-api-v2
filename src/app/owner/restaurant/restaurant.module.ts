@@ -5,9 +5,17 @@ import { OwnerProductModule } from './product/product.module';
 import { RestaurantController } from './restaurant.controller';
 import { OwnerStaffModule } from './staff/staff.module';
 import { OwnerTableModule } from './table/table.module';
+import { OwnerVariantModule } from './variant/variant.module';
 
 @Module({
-  imports: [OwnerLocationModule, OwnerTableModule, OwnerStaffModule, OwnerCategoryModule, OwnerProductModule],
+  imports: [
+    OwnerLocationModule,
+    OwnerTableModule,
+    OwnerStaffModule,
+    OwnerCategoryModule,
+    OwnerVariantModule,
+    OwnerProductModule,
+  ],
   controllers: [RestaurantController],
   providers: [],
 })

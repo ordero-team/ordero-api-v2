@@ -8,6 +8,7 @@ import { OwnerProductModule } from './app/owner/restaurant/product/product.modul
 import { OwnerRestaurantModule } from './app/owner/restaurant/restaurant.module';
 import { OwnerStaffModule } from './app/owner/restaurant/staff/staff.module';
 import { OwnerTableModule } from './app/owner/restaurant/table/table.module';
+import { OwnerVariantModule } from './app/owner/restaurant/variant/variant.module';
 
 export const routes: Routes = [
   // { path: '/auth', module: AuthModule },
@@ -37,6 +38,10 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/categories',
             module: OwnerCategoryModule,
+          },
+          {
+            path: '/:restaurant_id/variants',
+            module: OwnerVariantModule,
           },
           {
             path: '/:restaurant_id/products',

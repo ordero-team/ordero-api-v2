@@ -18,6 +18,7 @@ export enum PermOwner {
   Location = 'location',
   Table = 'table',
   Category = 'category',
+  Variant = 'variant',
   Product = 'product',
 }
 
@@ -40,6 +41,7 @@ export class RoleService implements IDynamicStorageRbac {
       [PermOwner.Location]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Table]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Category]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermOwner.Variant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Product]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
     };
 
