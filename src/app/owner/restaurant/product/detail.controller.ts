@@ -6,7 +6,9 @@ import { PermAct, PermOwner } from '@core/services/role.service';
 import { Media } from '@db/entities/core/media.entity';
 import { Category } from '@db/entities/owner/category.entity';
 import { ProductCategory } from '@db/entities/owner/product-category.entity';
+import { ProductVariant } from '@db/entities/owner/product-variant.entity';
 import { Product } from '@db/entities/owner/product.entity';
+import { Variant } from '@db/entities/owner/variant.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
@@ -140,6 +142,59 @@ export class DetailController {
     const category = await ProductCategory.findOneByOrFail({ id: param.category_id, product_id: product.id });
 
     await category.remove();
+
+    return response.noContent();
+  }
+
+  @Post('/variants')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Product}@${PermAct.U}`)
+  async addVariant(@Body() body, @Res() response, @Param() param, @Rest() rest) {
+    const rules = {
+      variant_ids: 'required|array',
+    };
+    const validation = Validator.init(body, rules);
+    if (validation.fails()) {
+      throw new ValidationException(validation);
+    }
+
+    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const prodVariants: ProductVariant[] = [];
+
+    const variants = await Variant.findBy({ id: In(body.variant_ids) });
+    for (const variant of variants) {
+      const isExist = await ProductVariant.exists({ where: { product_id: product.id, variant_id: variant.id } });
+      if (isExist) {
+        continue;
+      }
+
+      const pcat = new ProductVariant();
+      pcat.product_id = product.id;
+      pcat.variant_id = variant.id;
+      pcat.status = variant.status;
+      pcat.price = variant.price;
+      prodVariants.push(pcat);
+    }
+
+    if (prodVariants.length > 0) {
+      await ProductVariant.save(prodVariants);
+    }
+
+    await response.item(product, ProductTransformer);
+  }
+
+  @Delete('/variants/:variant_id')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Product}@${PermAct.D}`)
+  async deleteVariant(@Param() param, @Res() response, @Rest() rest) {
+    if (!param.variant_id) {
+      throw new BadRequestException();
+    }
+
+    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const variant = await ProductVariant.findOneByOrFail({ id: param.variant_id, product_id: product.id });
+
+    await variant.remove();
 
     return response.noContent();
   }
