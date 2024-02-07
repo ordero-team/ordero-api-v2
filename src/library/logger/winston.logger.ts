@@ -20,6 +20,6 @@ trans.push(new transports.Console());
 // }
 
 export const WinstonLogger = WinstonModule.createLogger({
-  format: format.combine(format.timestamp(), format.ms(), utilities.format.nestLike('ASURANSI')),
+  format: format.combine(format.timestamp(), format.ms(), utilities.format.nestLike('ORDERO')),
   transports: trans,
 });

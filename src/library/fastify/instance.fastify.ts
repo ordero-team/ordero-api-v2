@@ -13,7 +13,7 @@ export class InstanceFastify {
       logger: {
         stream: await PinoLogger(),
         level: 'debug', // this MUST be set at the lowest level of the
-        name: '[ASURANSI]',
+        name: '[ORDERO]',
         serializers: {
           req(request) {
             return {

@@ -4,10 +4,13 @@ import { CoreEntity, EmailColumn, ForeignColumn, NotNullColumn, PhoneColumn, Sta
 import { Exclude } from 'class-transformer';
 import { Column, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { Order } from '../core/order.entity';
+import { Category } from './category.entity';
 import { Location } from './location.entity';
 import { Owner } from './owner.entity';
 import { ProductStock } from './product-stock.entity';
+import { Product } from './product.entity';
 import { Table } from './table.entity';
+import { Variant } from './variant.entity';
 
 export enum RestaurantStatus {
   Active = 'active',
@@ -61,4 +64,16 @@ export class Restaurant extends BaseEntity {
   @Exclude()
   @OneToMany(() => Order, (order) => order.restaurant)
   orders: Promise<Order[]>;
+
+  @Exclude()
+  @OneToMany(() => Category, (cate) => cate.restaurant)
+  categories: Promise<Category[]>;
+
+  @Exclude()
+  @OneToMany(() => Variant, (cate) => cate.restaurant)
+  variants: Promise<Variant[]>;
+
+  @Exclude()
+  @OneToMany(() => Product, (stock) => stock.restaurant)
+  products: Promise<Product[]>;
 }
