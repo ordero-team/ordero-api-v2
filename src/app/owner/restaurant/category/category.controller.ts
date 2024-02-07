@@ -61,7 +61,7 @@ export class CategoryController {
 
   @Put('/:category_id')
   @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Location}@${PermAct.C}`)
+  @Permissions(`${PermOwner.Category}@${PermAct.U}`)
   async update(@Rest() rest, @Body() body, @Res() response, @Param() param) {
     const rules = {
       name: 'required|unique|safe_text',

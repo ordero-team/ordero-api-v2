@@ -9,7 +9,6 @@ export class TableTransformer extends TransformerAbstract {
 
   async includeLocation(entity: Table) {
     const location = await entity.location;
-    console.log(`Location => `, location);
     if (!location) {
       return this.null();
     }

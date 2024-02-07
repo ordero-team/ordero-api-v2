@@ -4,6 +4,7 @@ import { OwnerModule } from './app/owner/owner.module';
 import { OwnerProfileModule } from './app/owner/profile/profile.module';
 import { OwnerCategoryModule } from './app/owner/restaurant/category/category.module';
 import { OwnerLocationModule } from './app/owner/restaurant/location/location.module';
+import { OwnerProductModule } from './app/owner/restaurant/product/product.module';
 import { OwnerRestaurantModule } from './app/owner/restaurant/restaurant.module';
 import { OwnerStaffModule } from './app/owner/restaurant/staff/staff.module';
 import { OwnerTableModule } from './app/owner/restaurant/table/table.module';
@@ -36,6 +37,10 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/categories',
             module: OwnerCategoryModule,
+          },
+          {
+            path: '/:restaurant_id/products',
+            module: OwnerProductModule,
           },
         ],
       },

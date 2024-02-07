@@ -15,7 +15,7 @@ export class Category extends BaseEntity {
   restaurant_id: string;
 
   @JoinColumn()
-  @ManyToOne(() => Restaurant, (restaurant) => restaurant.images)
+  @ManyToOne(() => Restaurant, (restaurant) => restaurant.categories)
   restaurant: Restaurant;
 
   @Exclude()

@@ -45,7 +45,6 @@ export class TableController {
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Table}@${PermAct.C}`)
   async create(@Rest() rest: Restaurant, @Body() body, @Res() response) {
-    console.log(Object.values(TableStatus).join(','));
     const rules = {
       number: 'required|unique|safe_text',
       location_id: 'required',
@@ -75,7 +74,7 @@ export class TableController {
 
   @Put('/:table_id')
   @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Location}@${PermAct.C}`)
+  @Permissions(`${PermOwner.Location}@${PermAct.U}`)
   async update(@Rest() rest: Restaurant, @Body() body, @Res() response, @Param() param) {
     const rules = {
       number: 'required|unique|safe_text',

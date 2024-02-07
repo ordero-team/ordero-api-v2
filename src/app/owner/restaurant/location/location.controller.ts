@@ -64,7 +64,7 @@ export class LocationController {
 
   @Put('/:location_id')
   @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Location}@${PermAct.C}`)
+  @Permissions(`${PermOwner.Location}@${PermAct.U}`)
   async update(@Rest() rest, @Body() body, @Res() response, @Param() param) {
     const rules = {
       name: 'required|unique|safe_text',

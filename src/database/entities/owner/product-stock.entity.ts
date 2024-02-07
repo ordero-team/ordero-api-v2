@@ -1,5 +1,6 @@
 import { BaseEntity } from '@db/entities/base/base';
-import { Column, CoreEntity } from '@lib/typeorm/decorators';
+import { Column, CoreEntity, ForeignColumn } from '@lib/typeorm/decorators';
+import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne } from 'typeorm';
 import { Location } from './location.entity';
 import { ProductVariant } from './product-variant.entity';
@@ -25,13 +26,25 @@ export class ProductStock extends BaseEntity {
   @Column({ length: 100, nullable: true })
   actor: string;
 
+  @Exclude()
+  @ForeignColumn()
+  variant_id: string;
+
   @JoinColumn()
   @ManyToOne(() => ProductVariant, (variant) => variant.stocks)
   variant: Promise<ProductVariant>;
 
+  @Exclude()
+  @ForeignColumn()
+  location_id: string;
+
   @JoinColumn()
   @ManyToOne(() => Location, (loca) => loca.stocks)
   location: Promise<Location>;
+
+  @Exclude()
+  @ForeignColumn()
+  restaurant_id: string;
 
   @JoinColumn()
   @ManyToOne(() => Restaurant, (resta) => resta.stocks)
