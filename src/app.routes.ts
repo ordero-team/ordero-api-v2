@@ -7,6 +7,7 @@ import { OwnerLocationModule } from './app/owner/restaurant/location/location.mo
 import { OwnerProductModule } from './app/owner/restaurant/product/product.module';
 import { OwnerRestaurantModule } from './app/owner/restaurant/restaurant.module';
 import { OwnerStaffModule } from './app/owner/restaurant/staff/staff.module';
+import { OwnerStockModule } from './app/owner/restaurant/stock/stock.module';
 import { OwnerTableModule } from './app/owner/restaurant/table/table.module';
 import { OwnerVariantModule } from './app/owner/restaurant/variant/variant.module';
 
@@ -46,6 +47,10 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/products',
             module: OwnerProductModule,
+          },
+          {
+            path: '/:restaurant_id/stocks',
+            module: OwnerStockModule,
           },
         ],
       },

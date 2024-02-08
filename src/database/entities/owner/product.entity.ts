@@ -4,6 +4,7 @@ import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Media } from '../core/media.entity';
 import { ProductCategory } from './product-category.entity';
+import { ProductStock } from './product-stock.entity';
 import { ProductVariant } from './product-variant.entity';
 import { Restaurant } from './restaurant.entity';
 
@@ -51,4 +52,8 @@ export class Product extends BaseEntity {
   @Exclude()
   @OneToMany(() => ProductVariant, (productVar) => productVar.product)
   variants: Promise<ProductVariant[]>;
+
+  @Exclude()
+  @OneToMany(() => ProductStock, (stock) => stock.product)
+  stocks: Promise<ProductStock[]>;
 }

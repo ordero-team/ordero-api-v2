@@ -22,14 +22,14 @@ export class ProductVariant extends BaseEntity {
 
   @JoinColumn()
   @ManyToOne(() => Product, (product) => product.variants)
-  product: Product;
+  product: Promise<Product>;
 
   @ForeignColumn()
   variant_id: string;
 
   @JoinColumn()
   @ManyToOne(() => Variant, (variant) => variant.products, { nullable: true })
-  variant: Variant;
+  variant: Promise<Variant>;
 
   @Exclude()
   @OneToMany(() => ProductStock, (stock) => stock.variant)
