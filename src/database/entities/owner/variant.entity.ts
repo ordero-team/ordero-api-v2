@@ -4,6 +4,7 @@ import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { ProductCategory } from './product-category.entity';
 import { Restaurant } from './restaurant.entity';
+import { VariantGroup } from './variant-group.entity';
 
 export enum VariantStatus {
   Available = 'available',
@@ -20,6 +21,14 @@ export class Variant extends BaseEntity {
 
   @NotNullColumn()
   status: VariantStatus;
+
+  @Exclude()
+  @ForeignColumn()
+  group_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => VariantGroup, (group) => group.variants, { onDelete: 'CASCADE' })
+  group: Promise<VariantGroup>;
 
   @Exclude()
   @ForeignColumn()

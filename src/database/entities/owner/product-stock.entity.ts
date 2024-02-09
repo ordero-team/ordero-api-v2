@@ -4,10 +4,14 @@ import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne } from 'typeorm';
 import { Location } from './location.entity';
 import { ProductVariant } from './product-variant.entity';
+import { Product } from './product.entity';
 import { Restaurant } from './restaurant.entity';
 
 @CoreEntity()
 export class ProductStock extends BaseEntity {
+  @Column({ type: 'integer', default: 0 })
+  onhand: number;
+
   @Column({ type: 'integer', default: 0 })
   allocated: number;
 
@@ -33,6 +37,14 @@ export class ProductStock extends BaseEntity {
   @JoinColumn()
   @ManyToOne(() => ProductVariant, (variant) => variant.stocks)
   variant: Promise<ProductVariant>;
+
+  @Exclude()
+  @ForeignColumn()
+  product_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => Product, (variant) => variant.stocks)
+  product: Promise<Product>;
 
   @Exclude()
   @ForeignColumn()

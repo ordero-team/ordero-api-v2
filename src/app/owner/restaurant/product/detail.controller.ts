@@ -1,3 +1,4 @@
+import { Quero } from '@core/decorators/quero.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
@@ -6,10 +7,13 @@ import { PermAct, PermOwner } from '@core/services/role.service';
 import { Media } from '@db/entities/core/media.entity';
 import { Category } from '@db/entities/owner/category.entity';
 import { ProductCategory } from '@db/entities/owner/product-category.entity';
+import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { ProductVariant } from '@db/entities/owner/product-variant.entity';
 import { Product } from '@db/entities/owner/product.entity';
+import { VariantGroup } from '@db/entities/owner/variant-group.entity';
 import { Variant } from '@db/entities/owner/variant.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
+import { StockTransformer } from '@db/transformers/stock.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
@@ -69,7 +73,7 @@ export class DetailController {
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Product}@${PermAct.U}`)
   async uploadImage(@Param() param, @Req() request, @Res() response, @Rest() rest) {
-    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     if ((await Media.total(product)) >= 5) {
       throw new BadRequestException('Maximum total image allowed is 5');
     }
@@ -87,7 +91,7 @@ export class DetailController {
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Product}@${PermAct.D}`)
   async deleteImage(@Param() param, @Res() response, @Rest() rest) {
-    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     const media = await Media.findOrFail({ where: { id: param.image_id, product_id: product.id } });
 
     await this.aws.removeFile(media);
@@ -107,7 +111,7 @@ export class DetailController {
       throw new ValidationException(validation);
     }
 
-    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     const prodCategories: ProductCategory[] = [];
 
     const categories = await Category.findBy({ id: In(body.category_ids) });
@@ -138,12 +142,47 @@ export class DetailController {
       throw new BadRequestException();
     }
 
-    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     const category = await ProductCategory.findOneByOrFail({ id: param.category_id, product_id: product.id });
 
     await category.remove();
 
     return response.noContent();
+  }
+
+  @Get('/variants')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  async getVariants(@Rest() rest, @Res() response, @Param() param) {
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
+    const productVariants = await ProductVariant.findBy({ product_id: product.id });
+    const variants = await Variant.find({
+      where: { id: In(productVariants.map((val) => val.variant_id)) },
+      order: { price: 'ASC' },
+    });
+    const groups = await VariantGroup.find({
+      where: { id: In(variants.map((val) => val.group_id)) },
+      order: { name: 'ASC' },
+    });
+
+    const result: any[] = [];
+
+    for (const group of groups) {
+      const payload = {
+        ...group,
+        variants: [],
+      };
+
+      for (const variant of variants) {
+        if (variant.group_id === group.id) {
+          payload.variants.push(variant);
+        }
+      }
+
+      result.push(payload);
+    }
+
+    return response.data(result);
   }
 
   @Post('/variants')
@@ -158,7 +197,7 @@ export class DetailController {
       throw new ValidationException(validation);
     }
 
-    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     const prodVariants: ProductVariant[] = [];
 
     const variants = await Variant.findBy({ id: In(body.variant_ids) });
@@ -191,11 +230,31 @@ export class DetailController {
       throw new BadRequestException();
     }
 
-    const product = await Product.findOrFail({ where: { id: param.id, restaurant_id: rest.id } });
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     const variant = await ProductVariant.findOneByOrFail({ id: param.variant_id, product_id: product.id });
 
     await variant.remove();
 
     return response.noContent();
+  }
+
+  @Get('/stocks')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  async getStocks(@Param() param, @Res() response, @Rest() rest, @Quero() quero) {
+    if (!param.product_id) {
+      throw new BadRequestException();
+    }
+
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
+    const where = { product_id: product.id };
+
+    if (quero.location_id) {
+      Object.assign(where, { ...where, location_id: quero.location_id });
+    }
+
+    const stocks = await ProductStock.findBy(where);
+
+    return response.collection(stocks, StockTransformer);
   }
 }

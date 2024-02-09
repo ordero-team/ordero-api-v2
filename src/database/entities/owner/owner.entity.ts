@@ -101,6 +101,10 @@ export class Owner extends BaseEntity {
     return this.isVerified && this.isActive;
   }
 
+  get logName() {
+    return `${this.name} <${this.email || this.phone}>`;
+  }
+
   async getAvatar() {
     const media = await this.image;
     return media ? media.url : null;
