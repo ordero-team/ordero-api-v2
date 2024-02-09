@@ -36,7 +36,7 @@ export class Table extends BaseEntity {
 
   @JoinColumn()
   @ManyToOne(() => Location, (location) => location.tables, { onDelete: 'CASCADE' })
-  location: Location;
+  location: Promise<Location>;
 
   @Exclude()
   @OneToMany(() => Order, (order) => order.table)

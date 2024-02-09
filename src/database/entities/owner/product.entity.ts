@@ -1,10 +1,12 @@
 import { BaseEntity } from '@db/entities/base/base';
-import { Column, CoreEntity, NotNullColumn, PriceColumn } from '@lib/typeorm/decorators';
+import { Column, CoreEntity, ForeignColumn, NotNullColumn, PriceColumn } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { OneToMany } from 'typeorm';
+import { JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Media } from '../core/media.entity';
 import { ProductCategory } from './product-category.entity';
+import { ProductStock } from './product-stock.entity';
 import { ProductVariant } from './product-variant.entity';
+import { Restaurant } from './restaurant.entity';
 
 export enum ProductStatus {
   Available = 'available',
@@ -16,6 +18,9 @@ export enum ProductStatus {
 
 @CoreEntity()
 export class Product extends BaseEntity {
+  @NotNullColumn()
+  sku: string;
+
   @NotNullColumn()
   name: string;
 
@@ -29,6 +34,14 @@ export class Product extends BaseEntity {
   status: ProductStatus;
 
   @Exclude()
+  @ForeignColumn()
+  restaurant_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => Restaurant, (resta) => resta.products)
+  restaurant: Promise<Restaurant>;
+
+  @Exclude()
   @OneToMany(() => Media, (media) => media.product)
   images: Promise<Media[]>;
 
@@ -39,4 +52,8 @@ export class Product extends BaseEntity {
   @Exclude()
   @OneToMany(() => ProductVariant, (productVar) => productVar.product)
   variants: Promise<ProductVariant[]>;
+
+  @Exclude()
+  @OneToMany(() => ProductStock, (stock) => stock.product)
+  stocks: Promise<ProductStock[]>;
 }
