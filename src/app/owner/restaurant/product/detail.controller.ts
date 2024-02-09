@@ -10,6 +10,7 @@ import { ProductCategory } from '@db/entities/owner/product-category.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { ProductVariant } from '@db/entities/owner/product-variant.entity';
 import { Product } from '@db/entities/owner/product.entity';
+import { VariantGroup } from '@db/entities/owner/variant-group.entity';
 import { Variant } from '@db/entities/owner/variant.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
 import { StockTransformer } from '@db/transformers/stock.transformer';
@@ -147,6 +148,41 @@ export class DetailController {
     await category.remove();
 
     return response.noContent();
+  }
+
+  @Get('/variants')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  async getVariants(@Rest() rest, @Res() response, @Param() param) {
+    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
+    const productVariants = await ProductVariant.findBy({ product_id: product.id });
+    const variants = await Variant.find({
+      where: { id: In(productVariants.map((val) => val.variant_id)) },
+      order: { price: 'ASC' },
+    });
+    const groups = await VariantGroup.find({
+      where: { id: In(variants.map((val) => val.group_id)) },
+      order: { name: 'ASC' },
+    });
+
+    const result: any[] = [];
+
+    for (const group of groups) {
+      const payload = {
+        ...group,
+        variants: [],
+      };
+
+      for (const variant of variants) {
+        if (variant.group_id === group.id) {
+          payload.variants.push(variant);
+        }
+      }
+
+      result.push(payload);
+    }
+
+    return response.data(result);
   }
 
   @Post('/variants')

@@ -2,6 +2,7 @@ import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
 import { PermAct, PermOwner } from '@core/services/role.service';
+import { VariantGroup } from '@db/entities/owner/variant-group.entity';
 import { Variant, VariantStatus } from '@db/entities/owner/variant.entity';
 import { VariantTransformer } from '@db/transformers/variant.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
@@ -42,6 +43,7 @@ export class VariantController {
       name: 'required|unique|safe_text',
       price: 'required|numeric|min:0',
       status: `required|in:${Object.values(VariantStatus).join(',')}`,
+      group_id: 'required|uid',
     };
     const validation = Validator.init(body, rules);
     if (validation.fails()) {
@@ -53,11 +55,14 @@ export class VariantController {
       throw new BadRequestException('Variant has already existed.');
     }
 
+    const group = await VariantGroup.findOneByOrFail({ id: body.group_id });
+
     const variant = new Variant();
     variant.name = body.name;
     variant.price = body.price;
     variant.status = body.status;
     variant.restaurant_id = rest.id;
+    variant.group_id = group.id;
     await variant.save();
 
     return response.item(variant, VariantTransformer);
@@ -71,6 +76,7 @@ export class VariantController {
       name: 'required|unique|safe_text',
       price: 'required|numeric|min:0',
       status: `required|in:${Object.values(VariantStatus).join(',')}`,
+      group_id: 'required|uid',
     };
     const validation = Validator.init(body, rules);
     if (validation.fails()) {
@@ -85,13 +91,16 @@ export class VariantController {
       where: { name: body.name, restaurant_id: rest.id, id: Not(param.variant_id) },
     });
     if (variantExist) {
-      throw new BadRequestException('Category has already existed.');
+      throw new BadRequestException('Variant has already existed.');
     }
+
+    const group = await VariantGroup.findOneByOrFail({ id: body.group_id });
 
     const variant = await Variant.findOneByOrFail({ id: param.variant_id });
     variant.name = body.name;
     variant.price = body.price;
     variant.status = body.status;
+    variant.group_id = group.id;
     await variant.save();
 
     return response.item(variant, VariantTransformer);

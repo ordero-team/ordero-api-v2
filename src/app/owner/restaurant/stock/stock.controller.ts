@@ -136,6 +136,8 @@ export class StockController {
     const product = await productStock.product;
     const variant = await productStock.variant;
 
+    // @TODO: How about changing parent stock that affected to their variants stock
+
     if (variant === null) {
       // Set all product variants to unavailable when parent are 0
       if (Number(body.onhand) <= 0) {
