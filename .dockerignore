@@ -1,0 +1,26 @@
+# Ignore node_modules directory when it exists during build
+node_modules/
+
+# Ignore cache directories
+.cache/
+.npm/
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.log
+
+# Ignore test coverage reports
+coverage/
+
+# Ignore local configurations or development files
+.env*
+docker-compose.yml*
+
+# Ignore build artifacts
+dist/
+build/
