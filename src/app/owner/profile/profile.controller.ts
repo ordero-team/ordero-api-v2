@@ -10,7 +10,8 @@ import { ValidationException } from '@lib/exceptions/validation.exception';
 import { time } from '@lib/helpers/time.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
-import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Location } from '@db/entities/owner/location.entity';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
@@ -22,6 +23,32 @@ export class ProfileController {
   @Permissions(`${PermOwner.Profile}@${PermAct.R}`)
   async me(@Me() me, @Res() response) {
     return response.item(me, OwnerTransformer);
+  }
+
+  @Put()
+  @Permissions(`${PermOwner.Staff}@${PermAct.U}`)
+  async update(@Param() param, @Body() body, @Res() response, @Me() me: Owner) {
+    const rules = {
+      name: 'required|safe_text',
+      phone: 'required|phone',
+      location_id: 'uid',
+    };
+    const validation = Validator.init(body, rules);
+    if (validation.fails()) {
+      throw new ValidationException(validation);
+    }
+
+    let location: Location = null;
+    if (body.location_id) {
+      location = await Location.findOneByOrFail({ id: body.location_id });
+    }
+
+    me.name = body.name;
+    me.phone = body.phone;
+    me.location_id = location ? location.id : null;
+    await me.save();
+
+    await response.item(me, OwnerTransformer);
   }
 
   @Post('/resend-code')

@@ -90,7 +90,7 @@ export class Owner extends BaseEntity {
   }
 
   get isActive() {
-    return this.status === OwnerStatus.Active;
+    return [OwnerStatus.Active, OwnerStatus.Verify].includes(this.status);
   }
 
   get isBlocked() {

@@ -1,4 +1,4 @@
-import { Quero } from '@core/decorators/quero.decorator';
+import { Loc } from '@core/decorators/location.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
@@ -20,12 +20,12 @@ export class TableController {
   @Get()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Table}@${PermAct.R}`)
-  async index(@Rest() rest, @Res() response, @Quero() quero) {
+  async index(@Rest() rest, @Res() response, @Loc() loc: Location) {
     const tables = AppDataSource.createQueryBuilder(Table, 't1');
     tables.where({ restaurant_id: rest.id });
 
-    if (quero.location_id) {
-      tables.andWhere({ location_id: quero.location_id });
+    if (loc.id) {
+      tables.andWhere({ location_id: loc.id });
     }
 
     const data = await tables.search().sort().getPaged();
