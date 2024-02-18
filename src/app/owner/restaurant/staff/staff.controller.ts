@@ -1,4 +1,4 @@
-import { Quero } from '@core/decorators/quero.decorator';
+import { Loc } from '@core/decorators/location.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
@@ -11,25 +11,29 @@ import { ValidationException } from '@lib/exceptions/validation.exception';
 import { hash } from '@lib/helpers/encrypt.helper';
 import { randomChar } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
+import Logger from '@lib/logger/logger.library';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
 export class StaffController {
+  constructor(private mail: MailerService) {}
+
   @Get()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Staff}@${PermAct.R}`)
-  async index(@Rest() rest, @Res() response, @Quero() quero) {
-    const query = AppDataSource.createQueryBuilder(StaffUser, 't1').search().sort();
+  async index(@Rest() rest, @Res() response, @Loc() loc: Location) {
+    const query = AppDataSource.createQueryBuilder(StaffUser, 't1');
     query.where({ restaurant_id: rest.id });
 
-    if (quero.location_id) {
-      query.andWhere({ location_id: quero.location_id });
+    if (loc.id) {
+      query.andWhere({ location_id: loc.id });
     }
 
-    const staffs = await query.getPaged();
+    const staffs = await query.search().sort().getPaged();
     await response.paginate(staffs, StaffTransformer);
   }
 
@@ -43,13 +47,13 @@ export class StaffController {
 
   @Post()
   @Permissions(`${PermOwner.Staff}@${PermAct.C}`)
-  async store(@Body() body, @Res() response, @Res() rest) {
+  async store(@Body() body, @Res() response, @Rest() rest) {
     const rules = {
       name: 'required|safe_text',
       email: 'required|email',
       phone: 'required|phone',
       role_id: 'required|uid',
-      location_id: 'uid',
+      location_id: 'required|uid',
     };
     const validation = Validator.init(body, rules);
     if (validation.fails()) {
@@ -89,18 +93,18 @@ export class StaffController {
     staff.restaurant_id = rest.id;
     await staff.save();
 
-    // this.mail
-    //   .sendMail({
-    //     to: staff.email,
-    //     subject: 'Your staff account!',
-    //     template: 'staff-register',
-    //     context: {
-    //       name: staff.name,
-    //       password: plainPass,
-    //     },
-    //   })
-    //   .then(() => null)
-    //   .catch((error) => Logger.getInstance().notify(error));
+    this.mail
+      .sendMail({
+        to: staff.email,
+        subject: 'Your staff account!',
+        template: 'staff-register',
+        context: {
+          name: staff.name,
+          password: plainPass,
+        },
+      })
+      .then(() => null)
+      .catch((error) => Logger.getInstance().notify(error));
 
     await response.item(staff, StaffTransformer);
   }
@@ -121,6 +125,7 @@ export class StaffController {
     }
 
     const role = await StaffRole.findOneByOrFail({ id: body.role_id });
+
     let location: Location = null;
     if (body.location_id) {
       location = await Location.findOneByOrFail({ id: body.location_id });

@@ -113,9 +113,8 @@ export class AuthController {
 
     const data = request.only(['email', 'name', 'password', 'phone', 'restaurant']);
     const user = await this.service.register(data);
-    // const token = await this.service.login(user);
-    // return response.data(token);
-    return response.data(user);
+    const token = await this.service.login(user);
+    return response.data(token);
   }
 
   // @TODO: Logout

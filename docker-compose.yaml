@@ -1,0 +1,111 @@
+version: '3.7'
+
+services:
+  # api:
+  #   container_name: ordero-api
+  #   image: 'akbarsaputrait/ordero-api:latest'
+  #   restart: on-failure
+  #   environment:
+  #     TZ: '${TZ}'
+  #     DEBUG: '${DEBUG}'
+  #     PORT: '${PORT}'
+  #     ORIGIN: '${ORIGIN}'
+  #     MODE: '${MODE}'
+  #     API_URI: '${API_URI}'
+  #     APP_URI: '${APP_URI}'
+  #     APP_VERSION: '${APP_VERSION}'
+  #     ENCRYPT_KEY: '${ENCRYPT_KEY}'
+  #     JWT_SECRET: '${JWT_SECRET}'
+  #     JWT_TTL: '${JWT_TTL}'
+  #     DATABASE_MASTER_HOST: '${DATABASE_MASTER_HOST}'
+  #     DATABASE_USER: '${DATABASE_USER}'
+  #     DATABASE_PASSWORD: '${DATABASE_PASSWORD}'
+  #     DATABASE_PORT: '${DATABASE_PORT}'
+  #     DATABASE_SLAVE_HOST: '${DATABASE_SLAVE_HOST}'
+  #     DATABASE_NAME: '${DATABASE_NAME}'
+  #     DATABASE_TYPE: '${DATABASE_TYPE}'
+  #     REDIS_HOST: '${REDIS_HOST}'
+  #     REDIS_PORT: '${REDIS_PORT}'
+  #     REDIS_DATABASE: '${REDIS_DATABASE}'
+  #     REDIS_PASSWORD: '${REDIS_PASSWORD}'
+  #     REDIS_QUEUE: '${REDIS_QUEUE}'
+  #     REDIS_ENABLED: '${REDIS_ENABLED}'
+  #     SMTP_HOST: '${SMTP_HOST}'
+  #     SMTP_PORT: '${SMTP_PORT}'
+  #     MAIL_FROM: '${MAIL_FROM}'
+  #     MAIL_PASSWORD: '${MAIL_PASSWORD}'
+  #     MAIL_USERNAME: '${MAIL_USERNAME}'
+  #     AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID}'
+  #     AWS_BUCKET: '${AWS_BUCKET}'
+  #     AWS_ENDPOINT: '${AWS_ENDPOINT}'
+  #     AWS_REGION: '${AWS_REGION}'
+  #     AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY}'
+  #     SENTRY_DSN: '${SENTRY_DSN}'
+  #   volumes:
+  #     - 'ordero:/api'
+  #   ports:
+  #     - '4001:3000'
+  #   expose:
+  #     - '3000'
+  #   networks:
+  #     net:
+  #       ipv4_address: '${NETWORK_IP}'
+
+  api-local:
+    container_name: ordero-api-local
+    image: 'ordero-api-local:latest'
+    restart: on-failure
+    environment:
+      TZ: '${TZ}'
+      DEBUG: '${DEBUG}'
+      PORT: '${PORT_LOCAL}'
+      ORIGIN: '${ORIGIN}'
+      MODE: '${MODE}'
+      API_URI: '${API_URI}'
+      APP_URI: '${APP_URI}'
+      APP_VERSION: '${APP_VERSION}'
+      ENCRYPT_KEY: '${ENCRYPT_KEY}'
+      JWT_SECRET: '${JWT_SECRET}'
+      JWT_TTL: '${JWT_TTL}'
+      DATABASE_MASTER_HOST: '${DATABASE_MASTER_HOST}'
+      DATABASE_USER: '${DATABASE_USER}'
+      DATABASE_PASSWORD: '${DATABASE_PASSWORD}'
+      DATABASE_PORT: '${DATABASE_PORT}'
+      DATABASE_SLAVE_HOST: '${DATABASE_SLAVE_HOST}'
+      DATABASE_NAME: '${DATABASE_NAME}'
+      DATABASE_TYPE: '${DATABASE_TYPE}'
+      REDIS_HOST: '${REDIS_HOST}'
+      REDIS_PORT: '${REDIS_PORT}'
+      REDIS_DATABASE: '${REDIS_DATABASE}'
+      REDIS_PASSWORD: '${REDIS_PASSWORD}'
+      REDIS_QUEUE: '${REDIS_QUEUE}'
+      REDIS_ENABLED: '${REDIS_ENABLED}'
+      SMTP_HOST: '${SMTP_HOST}'
+      SMTP_PORT: '${SMTP_PORT}'
+      MAIL_FROM: '${MAIL_FROM}'
+      MAIL_PASSWORD: '${MAIL_PASSWORD}'
+      MAIL_USERNAME: '${MAIL_USERNAME}'
+      AWS_ACCESS_KEY_ID: '${AWS_ACCESS_KEY_ID}'
+      AWS_BUCKET: '${AWS_BUCKET}'
+      AWS_ENDPOINT: '${AWS_ENDPOINT}'
+      AWS_REGION: '${AWS_REGION}'
+      AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY}'
+      SENTRY_DSN: '${SENTRY_DSN}'
+    volumes:
+      - 'ordero:/api'
+    ports:
+      - '4002:3000'
+    expose:
+      - '3000'
+    networks:
+      net:
+        ipv4_address: '${NETWORK_IP_LOCAL}'
+
+volumes:
+  ordero:
+    name: ordero
+    driver: local
+
+networks:
+  net:
+    external: true
