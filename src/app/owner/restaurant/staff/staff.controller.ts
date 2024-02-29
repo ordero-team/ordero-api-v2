@@ -29,7 +29,7 @@ export class StaffController {
     const query = AppDataSource.createQueryBuilder(StaffUser, 't1');
     query.where({ restaurant_id: rest.id });
 
-    if (loc.id) {
+    if (loc && loc.id) {
       query.andWhere({ location_id: loc.id });
     }
 
