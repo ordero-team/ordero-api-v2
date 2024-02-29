@@ -46,6 +46,7 @@ export class StaffController {
   }
 
   @Post()
+  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Staff}@${PermAct.C}`)
   async store(@Body() body, @Res() response, @Rest() rest) {
     const rules = {
@@ -110,6 +111,7 @@ export class StaffController {
   }
 
   @Put('/:id')
+  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Staff}@${PermAct.U}`)
   async update(@Param() param, @Body() body, @Res() response) {
     const rules = {
