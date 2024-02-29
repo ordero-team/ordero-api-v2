@@ -86,6 +86,10 @@ export class LocationController {
       throw new BadRequestException('Location has already existed.');
     }
 
+    if (isTrue(body.is_default)) {
+      await Location.update({ restaurant_id: rest.id }, { is_default: !isTrue(body.is_default) });
+    }
+
     const loc = await Location.findOneByOrFail({ id: param.location_id });
     loc.name = body.name;
     loc.is_default = isTrue(body.is_default);
