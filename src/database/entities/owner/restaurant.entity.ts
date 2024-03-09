@@ -25,6 +25,9 @@ export class Restaurant extends BaseEntity {
   @PhoneColumn()
   phone: string;
 
+  @Column({ type: 'longtext' })
+  description: string;
+
   @Column()
   slug: string;
 
@@ -36,6 +39,12 @@ export class Restaurant extends BaseEntity {
 
   @StatusColumn()
   status: RestaurantStatus;
+
+  @Column({ nullable: true })
+  logo_url: string;
+
+  @Column({ nullable: true })
+  banner_url: string;
 
   @Exclude()
   @ForeignColumn()

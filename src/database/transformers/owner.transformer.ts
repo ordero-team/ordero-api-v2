@@ -1,4 +1,3 @@
-import { Media } from '@db/entities/core/media.entity';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { encrypt } from '@lib/helpers/encrypt.helper';
 import { RequestHelper } from '@lib/helpers/request.helper';
@@ -11,13 +10,13 @@ export class OwnerTransformer extends TransformerAbstract {
     return ['role', 'restaurant', 'location'];
   }
 
-  transform(entity: Owner) {
+  async transform(entity: Owner) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { image, ...rest } = entity.toJSON();
 
     return {
       ...rest,
-      avatar: Media.getImage(image),
+      avatar: await entity.getAvatar(),
     };
   }
 
@@ -41,7 +40,7 @@ export class OwnerTransformer extends TransformerAbstract {
             name: location.name,
           }
         : null,
-      avatar: Media.getImage(entity.image),
+      avatar: await entity.getAvatar(),
     };
   }
 

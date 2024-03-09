@@ -95,6 +95,19 @@ export class Media extends BaseEntity {
     } as Media;
   }
 
+  static async build<T>(this, entity: T | any, image: IStorageResponse): Promise<T> {
+    if (!entity.image) {
+      return this.add(entity, image);
+    }
+
+    // reload entity
+    const payload = await Media.getPayload(image);
+    await entity.image.update({ ...payload });
+    await entity.reload();
+
+    return entity;
+  }
+
   static async add<T>(entity: T | any, image: IStorageResponse): Promise<T> {
     const payload = await Media.getPayload(image);
     const klass = snakeCase(get(entity, 'constructor.name', '')).toLowerCase();
