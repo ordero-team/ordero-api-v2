@@ -2,7 +2,10 @@ import { Me } from '@core/decorators/user.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
 import { AuthService } from '@core/services/auth.service';
+import { AwsService } from '@core/services/aws.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
+import { Media } from '@db/entities/core/media.entity';
+import { Location } from '@db/entities/owner/location.entity';
 import { Owner, OwnerStatus } from '@db/entities/owner/owner.entity';
 import { OwnerTransformer } from '@db/transformers/owner.transformer';
 import { NotPermittedException } from '@lib/exceptions/not-permitted.exception';
@@ -10,13 +13,13 @@ import { ValidationException } from '@lib/exceptions/validation.exception';
 import { time } from '@lib/helpers/time.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
-import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
-import { Location } from '@db/entities/owner/location.entity';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
+import { isEmpty } from 'lodash';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
 export class ProfileController {
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private aws: AwsService) {}
 
   @Get()
   @UseGuards(OwnerGuard)
@@ -98,6 +101,32 @@ export class ProfileController {
     me.verified_at = time().toDate();
     await me.save();
 
+    return response.noContent();
+  }
+
+  @Post('/avatar')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Profile}@${PermAct.C}`)
+  async uploadAvatar(@Req() request, @Res() response, @Me() me: Owner) {
+    const file = await this.aws.uploadFile(request, response, 'image', { dynamicPath: `staff/${me.id}/avatar` });
+    if (!file || isEmpty(file)) {
+      throw new BadRequestException('Unable to upload image');
+    }
+
+    if (await me.image) {
+      await this.aws.removeFile(await me.image);
+    }
+
+    await Media.build<Owner>(me, file);
+
+    await response.item(me, OwnerTransformer);
+  }
+
+  @Delete('/avatar')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Profile}@${PermAct.D}`)
+  async deleteAvatar(@Res() response, @Me() me: Owner) {
+    await Media.delete({ owner_id: me.id });
     return response.noContent();
   }
 }
