@@ -83,7 +83,7 @@ export class Owner extends BaseEntity {
 
   @Exclude()
   @OneToOne(() => Media, (media) => media.owner)
-  image: Media;
+  image: Promise<Media>;
 
   get isVerified() {
     return this.verified_at !== null;

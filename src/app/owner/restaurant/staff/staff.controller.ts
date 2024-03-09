@@ -29,7 +29,7 @@ export class StaffController {
     const query = AppDataSource.createQueryBuilder(StaffUser, 't1');
     query.where({ restaurant_id: rest.id });
 
-    if (loc.id) {
+    if (loc && loc.id) {
       query.andWhere({ location_id: loc.id });
     }
 
@@ -46,6 +46,7 @@ export class StaffController {
   }
 
   @Post()
+  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Staff}@${PermAct.C}`)
   async store(@Body() body, @Res() response, @Rest() rest) {
     const rules = {
@@ -110,6 +111,7 @@ export class StaffController {
   }
 
   @Put('/:id')
+  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Staff}@${PermAct.U}`)
   async update(@Param() param, @Body() body, @Res() response) {
     const rules = {
