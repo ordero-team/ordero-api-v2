@@ -113,7 +113,7 @@ export class ProfileController {
       throw new BadRequestException('Unable to upload image');
     }
 
-    if (me.image) {
+    if (await me.image) {
       await this.aws.removeFile(await me.image);
     }
 

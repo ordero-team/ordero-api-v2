@@ -96,7 +96,7 @@ export class Media extends BaseEntity {
   }
 
   static async build<T>(this, entity: T | any, image: IStorageResponse): Promise<T> {
-    if (!entity.image) {
+    if (!(await entity.image)) {
       return this.add(entity, image);
     }
 
