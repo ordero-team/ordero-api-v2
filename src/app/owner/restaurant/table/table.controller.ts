@@ -24,7 +24,7 @@ export class TableController {
     const tables = AppDataSource.createQueryBuilder(Table, 't1');
     tables.where({ restaurant_id: rest.id });
 
-    if (loc.id) {
+    if (loc && loc.id) {
       tables.andWhere({ location_id: loc.id });
     }
 
