@@ -16,7 +16,7 @@ import { In } from 'typeorm';
 @Controller(':product_id/variants')
 @UseGuards(OwnerAuthGuard())
 export class VariantController {
-  @Get('/variants')
+  @Get()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Product}@${PermAct.R}`)
   async getVariants(@Rest() rest, @Res() response, @Param() param) {
@@ -51,7 +51,7 @@ export class VariantController {
     return response.data(result);
   }
 
-  @Post('/variants')
+  @Post()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Product}@${PermAct.U}`)
   async addVariant(@Body() body, @Res() response, @Param() param, @Rest() rest) {
@@ -88,7 +88,7 @@ export class VariantController {
     await response.item(product, ProductTransformer);
   }
 
-  @Delete('/variants/:variant_id')
+  @Delete('/:variant_id')
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Product}@${PermAct.D}`)
   async deleteVariant(@Param() param, @Res() response, @Rest() rest) {
