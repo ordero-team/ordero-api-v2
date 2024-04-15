@@ -50,12 +50,15 @@ export class Order extends BaseEntity {
   @StatusColumn()
   status: OrderStatus;
 
+  @Column({ nullable: true })
+  note: string;
+
   @Exclude()
   @ForeignColumn()
   customer_id: string;
 
   @JoinColumn()
-  @ManyToOne(() => Customer, (cust) => cust.orders, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Customer, (cust) => cust.orders, { onDelete: 'CASCADE', nullable: true })
   customer: Promise<Customer>;
 
   @Exclude()

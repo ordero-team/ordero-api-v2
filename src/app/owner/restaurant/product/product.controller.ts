@@ -32,7 +32,7 @@ export class ProductController {
 
   @Post()
   @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Category}@${PermAct.C}`)
+  @Permissions(`${PermOwner.Product}@${PermAct.C}`)
   async create(@Rest() rest, @Body() body, @Res() response) {
     const rules = {
       sku: 'required|sku',
@@ -96,16 +96,19 @@ export class ProductController {
       pvar.product_id = prod.id;
       pvar.price = prod.price;
       pvar.status = VariantStatus.Available;
+      pvar.restaurant_id = rest.id;
       pvars.push(pvar);
 
       // Save Variants
       if (variants.length > 0) {
         for (const variant of variants) {
-          const pvar = new ProductVariant();
-          pvar.status = variant.status;
-          pvar.product_id = prod.id;
-          pvar.variant_id = variant.id;
-          pvar.price = variant.price;
+          const vari = new ProductVariant();
+          vari.status = variant.status;
+          vari.product_id = prod.id;
+          vari.variant_id = variant.id;
+          vari.price = variant.price;
+          vari.restaurant_id = rest.id;
+          pvars.push(vari);
         }
       }
 

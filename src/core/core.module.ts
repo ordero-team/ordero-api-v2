@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { DataSource } from 'typeorm';
 import { AuthService } from './services/auth.service';
 import { AwsService } from './services/aws.service';
+import { CustomerService } from './services/customer.service';
 import { RoleService } from './services/role.service';
 import { TaskService } from './services/task.service';
 import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
@@ -28,6 +29,7 @@ import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
     JwtStrategy,
     AuthService,
     RoleService,
+    CustomerService,
     JwtOwnerStrategy,
     {
       provide: DataSource,
@@ -41,6 +43,7 @@ import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
     TaskService,
     RoleService,
     AuthService,
+    CustomerService,
     JwtStrategy,
     JwtOwnerStrategy,
     DataSource,
