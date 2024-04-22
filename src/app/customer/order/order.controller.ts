@@ -1,3 +1,5 @@
+import { Me } from '@core/decorators/user.decorator';
+import { AuthGuard } from '@core/guards/auth.guard';
 import { CustomerService } from '@core/services/customer.service';
 import { Customer, CustomerStatus } from '@db/entities/core/customer.entity';
 import { OrderProduct, OrderProductStatus } from '@db/entities/core/order-product.entity';
@@ -5,6 +7,7 @@ import { Order, OrderStatus } from '@db/entities/core/order.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { ProductVariant } from '@db/entities/owner/product-variant.entity';
 import { Product } from '@db/entities/owner/product.entity';
+import { Table, TableStatus } from '@db/entities/owner/table.entity';
 import { Variant, VariantStatus } from '@db/entities/owner/variant.entity';
 import { IOrderDetail } from '@db/interfaces/order.interface';
 import { OrderTransformer } from '@db/transformers/order.tranformer';
@@ -12,7 +15,7 @@ import { ValidationException } from '@lib/exceptions/validation.exception';
 import { sequenceNumber } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
-import { BadRequestException, Body, Controller, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { get } from 'lodash';
 
 @Controller()
@@ -31,12 +34,21 @@ export class OrderController {
         throw new BadRequestException(`Order has invalid product item qty of 0`);
       }
 
+      const table = await manager.getRepository(Table).findOneBy({ id: order.table_id });
+
+      if (table.status !== TableStatus.Available) {
+        throw new BadRequestException('Sorry, this table is not available right now');
+      }
+
+      await manager.getRepository(Table).update(order.table_id, { status: TableStatus.InUse });
+
       order.restaurant_id = newOrder.restaurant_id;
       order.location_id = newOrder.location_id;
       order.table_id = newOrder.table_id;
       order.status = newOrder.status;
       order.note = newOrder.note;
       order.customer_id = customer?.id || null;
+      order.number = ''; // Will be update it later
 
       await manager.getRepository(Order).save(order);
 
@@ -71,10 +83,16 @@ export class OrderController {
           throw new BadRequestException(`Sorry, ${productName} stock is insufficient`);
         }
 
-        const orderProduct = await manager.getRepository(OrderProduct).findOrCreate({
+        let orderProduct = new OrderProduct();
+
+        const checkOrderProduct = await manager.getRepository(OrderProduct).findOneBy({
           order_id: order.id,
           product_variant_id: variant.id,
         });
+        if (checkOrderProduct) {
+          orderProduct = checkOrderProduct;
+        }
+
         orderProduct.order_id = order.id;
         orderProduct.product_variant_id = variant.id;
         orderProduct.qty = product.qty;
@@ -85,9 +103,11 @@ export class OrderController {
 
       // Updare Order Number
       await manager.getRepository(Order).update(order.id, {
-        number: sequenceNumber(order.id),
+        number: sequenceNumber(order.uid),
       });
     });
+
+    await order.reload();
 
     return order;
   }
@@ -147,4 +167,17 @@ export class OrderController {
 
     return response.item(order, OrderTransformer);
   }
+
+  @Get()
+  @UseGuards(AuthGuard())
+  async index(@Res() response, @Me() me: Customer) {
+    const orders = await AppDataSource.createQueryBuilder(Order, 't1')
+      .where({ customer_id: me.id })
+      .search()
+      .sort()
+      .getPaged();
+    await response.paginate(orders, OrderTransformer);
+  }
+
+  // @TODO: Cancel Order while on "Waiting for Payment" Order
 }

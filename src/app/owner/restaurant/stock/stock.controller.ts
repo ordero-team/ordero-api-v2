@@ -18,7 +18,7 @@ import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { uuid } from '@lib/uid/uuid.library';
 import { Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import { get } from 'lodash';
-import { In } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
@@ -63,8 +63,20 @@ export class StockController {
     const progress = async () => {
       const stats = { success: [], fails: [] };
 
-      const variants = await ProductVariant.findBy({ id: In(body.variants.map((val) => val.id)) });
+      const variants = await ProductVariant.findBy({ id: In(body.variants.map((val) => val.id)), restaurant_id: rest.id });
+
+      if (!variants.length) {
+        stats.fails.push(`There is no product variant found`);
+        return stats;
+      }
+
       const locations = await Location.findBy({ id: In(body.location_ids), restaurant_id: rest.id });
+
+      if (!locations.length) {
+        stats.fails.push(`There is no location found`);
+        return stats;
+      }
+
       const stocks: ProductStock[] = [];
 
       for (const variant of variants) {
@@ -83,6 +95,15 @@ export class StockController {
               continue;
             }
 
+            if (stocks.filter((val) => val.product_id === product.id)) {
+              const check = await ProductVariant.exists({ where: { id: variant.id, variant_id: IsNull() } });
+
+              if (check) {
+                // Skip if it's a Parent
+                continue;
+              }
+            }
+
             const quantity = body.variants.find((val) => val.id === variant.id);
 
             const productStock = new ProductStock();
@@ -98,6 +119,8 @@ export class StockController {
             stats.success.push(
               `Product ${product.name} ${variantName ? '- ' + variantName + ' ' : ''}has been added to ${location.name}`
             );
+
+            // @TODO: Product History
           } catch (error) {
             stats.fails.push(error.message);
           }
