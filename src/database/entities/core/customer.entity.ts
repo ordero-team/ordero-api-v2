@@ -30,7 +30,7 @@ export class Customer extends BaseEntity {
   email: string;
 
   @Exclude()
-  @NotNullColumn()
+  @Column()
   password: string;
 
   @Exclude()

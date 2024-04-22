@@ -1,4 +1,5 @@
 import { Routes } from 'nest-router';
+import { CustomerAuthModule } from './app/customer/auth/auth.module';
 import { CustomerModule } from './app/customer/customer.module';
 import { CustomerOrderModule } from './app/customer/order/order.module';
 import { OwnerAuthModule } from './app/owner/auth/auth.module';
@@ -62,6 +63,15 @@ export const routes: Routes = [
   {
     path: '/customers',
     module: CustomerModule,
-    children: [{ path: '/orders', module: CustomerOrderModule }],
+    children: [
+      {
+        path: '/auth',
+        module: CustomerAuthModule,
+      },
+      {
+        path: '/orders',
+        module: CustomerOrderModule,
+      },
+    ],
   },
 ];
