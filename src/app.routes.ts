@@ -13,6 +13,7 @@ import { OwnerStaffModule } from './app/owner/restaurant/staff/staff.module';
 import { OwnerStockModule } from './app/owner/restaurant/stock/stock.module';
 import { OwnerTableModule } from './app/owner/restaurant/table/table.module';
 import { OwnerVariantModule } from './app/owner/restaurant/variant/variant.module';
+import { RestaurantModule } from './app/restaurant/restaurant.module';
 
 export const routes: Routes = [
   // { path: '/auth', module: AuthModule },
@@ -59,7 +60,10 @@ export const routes: Routes = [
       },
     ],
   },
-
+  {
+    path: '/restaurants',
+    module: RestaurantModule,
+  },
   {
     path: '/customers',
     module: CustomerModule,
