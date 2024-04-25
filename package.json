@@ -77,6 +77,7 @@
     "sharp": "^0.27.0",
     "simple-encryptor": "^4.0.0",
     "slug": "^8.2.3",
+    "twilio": "^3.54.1",
     "typeorm": "^0.3.7",
     "ulid": "^2.3.0",
     "uuid": "^8.3.2",

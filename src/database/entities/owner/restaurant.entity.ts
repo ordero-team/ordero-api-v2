@@ -8,6 +8,7 @@ import { Category } from './category.entity';
 import { Location } from './location.entity';
 import { Owner } from './owner.entity';
 import { ProductStock } from './product-stock.entity';
+import { ProductVariant } from './product-variant.entity';
 import { Product } from './product.entity';
 import { Table } from './table.entity';
 import { Variant } from './variant.entity';
@@ -79,10 +80,14 @@ export class Restaurant extends BaseEntity {
   categories: Promise<Category[]>;
 
   @Exclude()
-  @OneToMany(() => Variant, (cate) => cate.restaurant)
+  @OneToMany(() => Variant, (variant) => variant.restaurant)
   variants: Promise<Variant[]>;
 
   @Exclude()
-  @OneToMany(() => Product, (stock) => stock.restaurant)
+  @OneToMany(() => Product, (product) => product.restaurant)
   products: Promise<Product[]>;
+
+  @Exclude()
+  @OneToMany(() => ProductVariant, (prodVar) => prodVar.restaurant)
+  product_variants: Promise<ProductVariant[]>;
 }

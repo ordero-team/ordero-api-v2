@@ -6,6 +6,7 @@ import { ProductVariant } from '../owner/product-variant.entity';
 import { Order } from './order.entity';
 
 export enum OrderProductStatus {
+  WaitingPayment = 'waiting_payment',
   Preparing = 'preparing',
   Served = 'served',
   Cancelled = 'cancelled',

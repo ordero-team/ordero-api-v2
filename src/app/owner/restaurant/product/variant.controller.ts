@@ -78,6 +78,7 @@ export class VariantController {
       pcat.variant_id = variant.id;
       pcat.status = variant.status;
       pcat.price = variant.price;
+      pcat.restaurant_id = rest.id;
       prodVariants.push(pcat);
     }
 

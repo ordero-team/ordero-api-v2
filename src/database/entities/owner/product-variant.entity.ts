@@ -6,6 +6,7 @@ import { JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { OrderProduct } from '../core/order-product.entity';
 import { ProductStock } from './product-stock.entity';
 import { Product } from './product.entity';
+import { Restaurant } from './restaurant.entity';
 import { Variant } from './variant.entity';
 
 @CoreEntity()
@@ -38,4 +39,12 @@ export class ProductVariant extends BaseEntity {
   @Exclude()
   @OneToMany(() => OrderProduct, (op) => op.product_variant)
   order_products: Promise<OrderProduct[]>;
+
+  @Exclude()
+  @ForeignColumn()
+  restaurant_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => Restaurant, (restaurant) => restaurant.product_variants, { onDelete: 'CASCADE' })
+  restaurant: Promise<Restaurant>;
 }
