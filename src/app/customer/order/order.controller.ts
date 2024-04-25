@@ -178,6 +178,4 @@ export class OrderController {
       .getPaged();
     await response.paginate(orders, OrderTransformer);
   }
-
-  // @TODO: Cancel Order while on "Waiting for Payment" Order
 }
