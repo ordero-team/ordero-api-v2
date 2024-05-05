@@ -8,16 +8,27 @@ import { Location } from '@db/entities/owner/location.entity';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { ProductVariant } from '@db/entities/owner/product-variant.entity';
-import { ProductStatus } from '@db/entities/owner/product.entity';
+import { Product, ProductStatus } from '@db/entities/owner/product.entity';
 import { VariantStatus } from '@db/entities/owner/variant.entity';
 import { StockTransformer } from '@db/transformers/stock.transformer';
-import { GenericException } from '@lib/exceptions/generic.exception';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
+import Socket, { PubSubEventType, PubSubPayloadType, PubSubStatus } from '@lib/pubsub/pubsub.lib';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { uuid } from '@lib/uid/uuid.library';
-import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { get } from 'lodash';
 import { In, IsNull } from 'typeorm';
 
@@ -51,7 +62,7 @@ export class StockController {
   @Permissions(`${PermOwner.Stock}@${PermAct.C}`)
   async create(@Rest() rest, @Body() body, @Res() response, @Me() me: Owner) {
     const rules = {
-      variants: 'required|array',
+      products: 'required|array',
       location_ids: 'required|array|uid',
     };
     const validation = Validator.init(body, rules);
@@ -65,54 +76,71 @@ export class StockController {
       const stats = { success: [], fails: [] };
 
       try {
-        const variants = await ProductVariant.findBy({ id: In(body.variants.map((val) => val.id)), restaurant_id: rest.id });
+        const items = await Product.findBy({ id: In(body.products.map((val) => val.id)), restaurant_id: rest.id });
 
-        if (!variants.length) {
-          throw new BadRequestException(`There is no product variant found`);
+        if (!items.length) {
+          throw new BadRequestException(`There is no products found`);
         }
 
         const locations = await Location.findBy({ id: In(body.location_ids), restaurant_id: rest.id });
 
         if (!locations.length) {
-          throw new BadRequestException(`There is no location found`);
+          throw new BadRequestException(`There is no locations found`);
         }
 
         const stocks: ProductStock[] = [];
 
-        for (const variant of variants) {
+        for (const item of body.products) {
+          const product = items.find((val) => val.id === item.id);
+
+          const where = { product_id: product.id };
+
+          if (item.variant_id) {
+            Object.assign(where, { ...where, variant_id: item.variant_id });
+          }
+
+          const productVariant = await ProductVariant.findOneBy(where);
+
+          if (!productVariant) {
+            throw new NotFoundException(`Can't found ${product.sku} match with ID Variant ${item.variant_id}`);
+          }
+
           for (const location of locations) {
             try {
-              const isExist = await ProductStock.exists({ where: { location_id: location.id, variant_id: variant.id } });
+              const isExist = await ProductStock.exists({
+                where: { location_id: location.id, product_id: product.id, variant_id: productVariant.id },
+              });
 
-              const product = await variant.product;
-              const productFullName = await variant.getFullName();
+              const productFullName = await productVariant.getFullName();
 
               if (product.status == ProductStatus.Discontinued) {
                 throw new BadRequestException(`Can't add initial stock, ${productFullName} status is discontinued`);
               }
 
               if (isExist) {
-                throw new GenericException(`Product ${productFullName} already exist at ${location.name}`);
+                throw new BadRequestException(`Product ${productFullName} already exist at ${location.name}`);
               }
 
               // Count Product Variants (to check if it has parent, so it should be skipped)
               const countVariant = await ProductVariant.count({ where: { product_id: product.id } });
               if (countVariant > 1) {
-                const check = await ProductVariant.exists({ where: { id: variant.id, variant_id: IsNull() } });
+                const check = await ProductVariant.exists({ where: { id: productVariant.id, variant_id: IsNull() } });
                 if (check) {
                   // Skip if it's a Parent
-                  continue;
+                  throw new BadRequestException(
+                    `Product ${productFullName} are skipped because it has variants. Please choose the variant.`
+                  );
                 }
               }
 
-              const quantity = body.variants.find((val) => val.id === variant.id);
+              const quantity = body.products.find((val) => val.id === product.id);
 
               const action = `Initial Stock: ${productFullName} at ${location.name}`;
               const productStock = new ProductStock();
-              productStock.product_id = product.id;
-              productStock.variant_id = variant.id;
+              productStock.product_id = productVariant.product_id;
+              productStock.variant_id = productVariant.id;
               productStock.location_id = location.id;
-              productStock.onhand = get(quantity, 'onhand', 0);
+              productStock.onhand = get(quantity, 'qty', 0);
               productStock.restaurant_id = rest.id;
               productStock.last_action = action;
               productStock.actor = me.logName;
@@ -136,10 +164,29 @@ export class StockController {
     };
 
     progress()
-      .then((stats) => {
-        console.log(stats);
+      .then(({ success, fails }) => {
+        const payload = [...fails, ...success];
+
+        Socket.getInstance().event(me.id, {
+          request_id,
+          status: fails.length > 0 || !success.length ? PubSubStatus.Warning : PubSubStatus.Success,
+          type: PubSubEventType.OwnerCreateStock,
+          payload: {
+            type: PubSubPayloadType.Dialog,
+            body: payload.length > 50 ? [...payload.slice(0, 50), 'and more...'] : payload,
+          },
+        });
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        Socket.getInstance()
+          .event(me.id, {
+            request_id,
+            status: PubSubStatus.Fail,
+            type: PubSubEventType.OwnerCreateStock,
+            error: error.message,
+          })
+          .catch((error) => console.log(error));
+      });
 
     return response.data({ request_id });
   }
