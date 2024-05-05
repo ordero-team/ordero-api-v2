@@ -69,7 +69,7 @@ export class OrderController {
           },
         });
 
-        if (stock.onhand < product.qty) {
+        if (product.qty < stock.available) {
           const product = await manager.getRepository(Product).findOneByOrFail({ id: variant.product_id });
 
           let productName = product.name;
@@ -97,7 +97,7 @@ export class OrderController {
         orderProduct.product_variant_id = variant.id;
         orderProduct.qty = product.qty;
         orderProduct.price = variant.price;
-        orderProduct.status = OrderProductStatus.WaitingPayment;
+        orderProduct.status = OrderProductStatus.WaitingApproval;
         await manager.getRepository(OrderProduct).save(orderProduct);
       }
 
@@ -132,7 +132,7 @@ export class OrderController {
       restaurant_id: get(body, 'restaurant_id', null),
       location_id: get(body, 'location_id', null),
       table_id: get(body, 'table_id', null),
-      status: OrderStatus.WaitingPayment,
+      status: OrderStatus.WaitingApproval,
       customer_name: get(body, 'customer_name', 'Guest'),
       customer_phone: get(body, 'customer_phone', null),
       note: get(body, 'note', null),
@@ -164,6 +164,8 @@ export class OrderController {
     }
 
     const order = await OrderController.createOrder(newOrder, customer);
+
+    // @TODO: Socket to Cashier
 
     return response.item(order, OrderTransformer);
   }

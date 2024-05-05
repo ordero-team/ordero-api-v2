@@ -16,8 +16,7 @@ import { Customer } from './customer.entity';
 import { OrderProduct } from './order-product.entity';
 
 export enum OrderStatus {
-  WaitingPayment = 'waiting_payment',
-  Pending = 'pending',
+  WaitingApproval = 'waiting_approval',
   Confirmed = 'confirmed',
   Preparing = 'preparing',
   Served = 'served',

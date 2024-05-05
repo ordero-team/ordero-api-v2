@@ -1,5 +1,6 @@
 import { mail } from '@config/mail.config';
 import { CoreModule } from '@core/core.module';
+import { SocketioGateway } from '@lib/pubsub/socket.gateway';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -21,6 +22,6 @@ import { RestaurantModule } from './app/restaurant/restaurant.module';
     CustomerModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [SocketioGateway],
 })
 export class AppModule {}

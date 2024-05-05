@@ -30,7 +30,7 @@ export class DetailController {
 
     const order = await Order.findOneByOrFail({ id: param.order_id, customer_id: me.id });
 
-    if (order.status != OrderStatus.WaitingPayment) {
+    if (order.status != OrderStatus.WaitingApproval) {
       throw new BadRequestException('Order is not cancellable');
     }
 

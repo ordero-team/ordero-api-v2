@@ -2,7 +2,7 @@ import { Restaurant, RestaurantStatus } from '@db/entities/owner/restaurant.enti
 import { RestaurantTransformer } from '@db/transformers/restaurant.transformer';
 import { Controller, Get, Res } from '@nestjs/common';
 
-@Controller('restaurants')
+@Controller()
 export class RestaurantController {
   @Get()
   async getRestaurants(@Res() response) {

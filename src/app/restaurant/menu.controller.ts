@@ -4,7 +4,7 @@ import { ProductTransformer } from '@db/transformers/product.transformer';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { Controller, Get, Param, Res } from '@nestjs/common';
 
-@Controller('restaurants/:restaurant_id/menus')
+@Controller(':restaurant_id/menus')
 export class MenuController {
   @Get()
   async getMenus(@Res() response, @Param() params) {
