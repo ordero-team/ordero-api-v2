@@ -1,4 +1,7 @@
 import { Routes } from 'nest-router';
+import { CustomerAuthModule } from './app/customer/auth/auth.module';
+import { CustomerModule } from './app/customer/customer.module';
+import { CustomerOrderModule } from './app/customer/order/order.module';
 import { OwnerAuthModule } from './app/owner/auth/auth.module';
 import { OwnerModule } from './app/owner/owner.module';
 import { OwnerProfileModule } from './app/owner/profile/profile.module';
@@ -10,6 +13,7 @@ import { OwnerStaffModule } from './app/owner/restaurant/staff/staff.module';
 import { OwnerStockModule } from './app/owner/restaurant/stock/stock.module';
 import { OwnerTableModule } from './app/owner/restaurant/table/table.module';
 import { OwnerVariantModule } from './app/owner/restaurant/variant/variant.module';
+import { RestaurantModule } from './app/restaurant/restaurant.module';
 
 export const routes: Routes = [
   // { path: '/auth', module: AuthModule },
@@ -53,6 +57,24 @@ export const routes: Routes = [
             module: OwnerStockModule,
           },
         ],
+      },
+    ],
+  },
+  {
+    path: '/restaurants',
+    module: RestaurantModule,
+  },
+  {
+    path: '/customers',
+    module: CustomerModule,
+    children: [
+      {
+        path: '/auth',
+        module: CustomerAuthModule,
+      },
+      {
+        path: '/orders',
+        module: CustomerOrderModule,
       },
     ],
   },

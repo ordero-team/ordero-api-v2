@@ -16,8 +16,7 @@ import { Customer } from './customer.entity';
 import { OrderProduct } from './order-product.entity';
 
 export enum OrderStatus {
-  WaitingPayment = 'waiting_payment',
-  Pending = 'pending',
+  WaitingApproval = 'waiting_approval',
   Confirmed = 'confirmed',
   Preparing = 'preparing',
   Served = 'served',
@@ -50,12 +49,15 @@ export class Order extends BaseEntity {
   @StatusColumn()
   status: OrderStatus;
 
+  @Column({ nullable: true })
+  note: string;
+
   @Exclude()
   @ForeignColumn()
   customer_id: string;
 
   @JoinColumn()
-  @ManyToOne(() => Customer, (cust) => cust.orders, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Customer, (cust) => cust.orders, { onDelete: 'CASCADE', nullable: true })
   customer: Promise<Customer>;
 
   @Exclude()
