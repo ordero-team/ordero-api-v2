@@ -10,9 +10,11 @@ import { DataSource } from 'typeorm';
 import { AuthService } from './services/auth.service';
 import { AwsService } from './services/aws.service';
 import { CustomerService } from './services/customer.service';
+import { PdfService } from './services/pdf.service';
 import { RoleService } from './services/role.service';
 import { TaskService } from './services/task.service';
 import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
+import { UtilService } from './services/util.service';
 
 @Global()
 @Module({
@@ -30,6 +32,8 @@ import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
     AuthService,
     RoleService,
     CustomerService,
+    PdfService,
+    UtilService,
     JwtOwnerStrategy,
     {
       provide: DataSource,
@@ -44,6 +48,8 @@ import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
     RoleService,
     AuthService,
     CustomerService,
+    PdfService,
+    UtilService,
     JwtStrategy,
     JwtOwnerStrategy,
     DataSource,

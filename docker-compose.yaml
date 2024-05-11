@@ -53,7 +53,7 @@ services:
 
   api-local:
     container_name: ordero-api-local
-    image: 'ordero-api-local:latest'
+    image: 'ordero-api-local:develop'
     restart: on-failure
     environment:
       TZ: '${TZ}'
@@ -91,14 +91,18 @@ services:
       AWS_REGION: '${AWS_REGION}'
       AWS_SECRET_ACCESS_KEY: '${AWS_SECRET_ACCESS_KEY}'
       SENTRY_DSN: '${SENTRY_DSN}'
+      SOCKET_TYPE: '${SOCKET_TYPE}'
+      TWILLIO_SID: '${TWILLIO_SID}'
+      TWILLIO_TOKEN: '${TWILLIO_TOKEN}'
+      TWILLIO_SERVICE: '${TWILLIO_SERVICE}'
     volumes:
       - 'ordero:/api'
     ports:
-      - '4002:3000'
+      - '${PORT_LOCAL}:3000'
     expose:
       - '3000'
     networks:
-      net:
+      order_net:
         ipv4_address: '${NETWORK_IP_LOCAL}'
 
 volumes:
@@ -107,5 +111,5 @@ volumes:
     driver: local
 
 networks:
-  net:
+  order_net:
     external: true

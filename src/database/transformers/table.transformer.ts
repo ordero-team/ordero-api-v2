@@ -1,10 +1,20 @@
 import { Table } from '@db/entities/owner/table.entity';
 import { TransformerAbstract } from '@lib/transformer/abstract.transformer';
 import { LocationTransformer } from './location.transformer';
+import { RestaurantTransformer } from './restaurant.transformer';
 
 export class TableTransformer extends TransformerAbstract {
   get availableInclude() {
-    return ['location'];
+    return ['restaurant', 'location'];
+  }
+
+  async includeRestaurant(entity: Table) {
+    const restaurant = await entity.restaurant;
+    if (!restaurant) {
+      return this.null();
+    }
+
+    return this.item(restaurant, RestaurantTransformer);
   }
 
   async includeLocation(entity: Table) {

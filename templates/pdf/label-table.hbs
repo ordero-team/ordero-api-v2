@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant QR Code Menu</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .container {
+        width: 90%;
+        max-width: 600px;
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .qr-code-img {
+        width: 200px;
+        height: auto;
+        margin-bottom: 20px;
+      }
+      .qr-code-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .qr-code-subtitle {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 20px;
+      }
+      .table-number {
+        font-size: 36px;
+        font-weight: bold;
+        color: #057dcd;
+        margin-top: 20px;
+      }
+      .restaurant-info {
+        font-size: 14px;
+        color: #999;
+        margin-top: 20px;
+      }
+
+      .box {
+        width: 200px;
+        height: 300px;
+        position: relative;
+        border: 1px solid #bbb;
+        background: #eee;
+      }
+      .ribbon {
+        position: absolute;
+        left: -5px;
+        top: -5px;
+        z-index: 1;
+        overflow: hidden;
+        width: 75px;
+        height: 75px;
+        text-align: right;
+      }
+      .ribbon span {
+        font-size: 10px;
+        font-weight: bold;
+        color: #fff;
+        text-transform: uppercase;
+        text-align: center;
+        line-height: 20px;
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+        width: 100px;
+        display: block;
+        background: #79a70a;
+        background: linear-gradient(#2989d8 0%, #1e5799 100%);
+        box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
+        position: absolute;
+        top: 19px;
+        left: -21px;
+      }
+      .ribbon span::before {
+        content: '';
+        position: absolute;
+        left: 0px;
+        top: 100%;
+        z-index: -1;
+        border-left: 3px solid #1e5799;
+        border-right: 3px solid transparent;
+        border-bottom: 3px solid transparent;
+        border-top: 3px solid #1e5799;
+      }
+      .ribbon span::after {
+        content: '';
+        position: absolute;
+        right: 0px;
+        top: 100%;
+        z-index: -1;
+        border-left: 3px solid transparent;
+        border-right: 3px solid #1e5799;
+        border-bottom: 3px solid transparent;
+        border-top: 3px solid #1e5799;
+      }
+    </style>
+  </head>
+  <body>
+    {{#each data}}
+    <div class="box" style="position: relative; height: 100%; width: 100%">
+      <div class="ribbon"><span>Ordero</span></div>
+      <div class="container">
+        <img
+          src="{{barcode}}"
+          alt="QR Code"
+          class="qr-code-img"
+        />
+        <div class="qr-code-title">Scan this QR</div>
+        <div class="qr-code-subtitle">To create order</div>
+        <div class="table-number">Table {{name}}</div>
+        <div class="restaurant-info">
+          {{restaurant}}<br />
+          Location: {{location}}
+        </div>
+      </div>
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 1440 320"
+        style="position: absolute; bottom: 0"
+      >
+        <path
+          fill="#057dcd"
+          fill-opacity="1"
+          d="M0,128L48,138.7C96,149,192,171,288,160C384,149,480,107,576,112C672,117,768,171,864,181.3C960,192,1056,160,1152,138.7C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+        ></path>
+      </svg>
+    </div>
+    <div style="page-break-after: always;"></div>
+    {{/each}}
+  </body>
+</html>

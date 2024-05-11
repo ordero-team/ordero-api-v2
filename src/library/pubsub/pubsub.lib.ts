@@ -9,6 +9,7 @@ export enum PubSubEvent {
 
 export enum PubSubEventType {
   OwnerCreateStock = 'owner_create_stock',
+  OwnerGetTableLabel = 'owner_get_table_label',
 }
 
 export enum PubSubStatus {
