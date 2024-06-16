@@ -10,7 +10,7 @@ import { Product } from '@db/entities/owner/product.entity';
 import { Table, TableStatus } from '@db/entities/owner/table.entity';
 import { Variant, VariantStatus } from '@db/entities/owner/variant.entity';
 import { IOrderDetail } from '@db/interfaces/order.interface';
-import { OrderTransformer } from '@db/transformers/order.tranformer';
+import { OrderTransformer } from '@db/transformers/order.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { sequenceNumber } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
@@ -65,8 +65,6 @@ export class OrderController {
             status: VariantStatus.Available,
           },
         });
-
-        console.log(variant);
 
         const stock = await manager.getRepository(ProductStock).findOneOrFail({
           where: {

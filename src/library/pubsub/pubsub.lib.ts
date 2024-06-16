@@ -10,6 +10,8 @@ export enum PubSubEvent {
 export enum PubSubEventType {
   OwnerCreateStock = 'owner_create_stock',
   OwnerGetTableLabel = 'owner_get_table_label',
+  // Customer
+  CustomerCreateOrder = 'customer_create_order',
 }
 
 export enum PubSubStatus {
@@ -22,6 +24,7 @@ export enum PubSubStatus {
 export enum PubSubPayloadType {
   Dialog = 'dialog',
   Download = 'download',
+  Notification = 'notification',
 }
 
 interface IPubSubEventData {

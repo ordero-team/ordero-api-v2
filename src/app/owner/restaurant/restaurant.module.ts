@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OwnerCategoryModule } from './category/category.module';
 import { OwnerLocationModule } from './location/location.module';
+import { OwnerOrderModule } from './order/order.module';
 import { OwnerProductModule } from './product/product.module';
 import { RestaurantController } from './restaurant.controller';
 import { OwnerStaffModule } from './staff/staff.module';
@@ -17,6 +18,7 @@ import { OwnerVariantModule } from './variant/variant.module';
     OwnerVariantModule,
     OwnerProductModule,
     OwnerStockModule,
+    OwnerOrderModule,
   ],
   controllers: [RestaurantController],
   providers: [],

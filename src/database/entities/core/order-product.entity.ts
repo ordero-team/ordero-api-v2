@@ -26,6 +26,7 @@ export class OrderProduct extends BaseEntity {
   @ForeignColumn()
   product_variant_id: string;
 
+  @Exclude()
   @JoinColumn()
   @ManyToOne(() => ProductVariant, (pv) => pv.order_products, { onDelete: 'CASCADE' })
   product_variant: Promise<ProductVariant>;
