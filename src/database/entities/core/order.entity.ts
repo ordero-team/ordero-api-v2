@@ -35,13 +35,13 @@ export class Order extends BaseEntity {
   number: string;
 
   @PriceColumn()
-  gross_total: string;
+  gross_total: number;
 
   @PriceColumn()
-  discount: string;
+  discount: number;
 
   @PriceColumn()
-  net_total: string;
+  net_total: number;
 
   @DateTimeColumn()
   billed_at: Date;

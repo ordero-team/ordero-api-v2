@@ -6,7 +6,7 @@ import { GenericException } from '@lib/exceptions/generic.exception';
 import { Controller, Get, NotFoundException, Param, Res } from '@nestjs/common';
 import { capitalize, get } from 'lodash';
 
-@Controller('tables')
+@Controller()
 export class TableController {
   @Get('/:id')
   async checkTable(@Param() params, @Res() response) {

@@ -13,7 +13,7 @@ export interface IOrderItems {
 export interface IOrderDetail {
   restaurant_id: string;
   table_id: string;
-  location_id: string;
+  location_id?: string;
   reference?: string;
   customer_name: string;
   customer_phone?: string;

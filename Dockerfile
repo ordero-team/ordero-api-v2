@@ -1,4 +1,4 @@
-FROM node:16.13.1-alpine AS BUILD_IMAGE
+FROM node:16.14.0-alpine AS BUILD_IMAGE
 
 # couchbase sdk requirements
 RUN apk update && \
@@ -20,7 +20,7 @@ RUN yarn lint
 # build application
 RUN yarn build
 
-FROM node:16.13.1-alpine
+FROM node:16.14.0-alpine
 
 # Python
 RUN apk update && \

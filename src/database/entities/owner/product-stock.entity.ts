@@ -30,7 +30,6 @@ export class ProductStock extends BaseEntity {
   @Column({ length: 100, nullable: true })
   actor: string;
 
-  @Exclude()
   @ForeignColumn()
   variant_id: string;
 

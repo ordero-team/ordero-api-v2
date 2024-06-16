@@ -17,6 +17,7 @@ import { Validator } from '@lib/helpers/validator.helper';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { get } from 'lodash';
+import { IsNull } from 'typeorm';
 
 @Controller()
 export class OrderController {
@@ -40,26 +41,32 @@ export class OrderController {
         throw new BadRequestException('Sorry, this table is not available right now');
       }
 
-      await manager.getRepository(Table).update(order.table_id, { status: TableStatus.InUse });
+      table.status = TableStatus.InUse;
+      await manager.getRepository(Table).save(table);
 
       order.restaurant_id = newOrder.restaurant_id;
-      order.location_id = newOrder.location_id;
+      order.location_id = table.location_id;
       order.table_id = newOrder.table_id;
       order.status = newOrder.status;
       order.note = newOrder.note;
       order.customer_id = customer?.id || null;
+      order.discount = null;
       order.number = ''; // Will be update it later
 
       await manager.getRepository(Order).save(order);
 
+      const orderedProducts: OrderProduct[] = [];
       for (const product of newOrder.products) {
         const variant = await manager.getRepository(ProductVariant).findOneOrFail({
           where: {
-            id: product.id,
+            product_id: product.id,
+            variant_id: get(product, 'variant_id', null) || IsNull(),
             restaurant_id: newOrder.restaurant_id,
             status: VariantStatus.Available,
           },
         });
+
+        console.log(variant);
 
         const stock = await manager.getRepository(ProductStock).findOneOrFail({
           where: {
@@ -96,14 +103,17 @@ export class OrderController {
         orderProduct.order_id = order.id;
         orderProduct.product_variant_id = variant.id;
         orderProduct.qty = product.qty;
-        orderProduct.price = variant.price;
+        orderProduct.price = variant.price * product.qty;
         orderProduct.status = OrderProductStatus.WaitingApproval;
         await manager.getRepository(OrderProduct).save(orderProduct);
+
+        orderedProducts.push(orderProduct);
       }
 
       // Updare Order Number
       await manager.getRepository(Order).update(order.id, {
         number: sequenceNumber(order.uid),
+        gross_total: orderedProducts.reduce((price, a) => price + a.price, 0),
       });
     });
 
@@ -116,7 +126,6 @@ export class OrderController {
   async createOrder(@Res() response, @Body() body) {
     const rules = {
       restaurant_id: 'required|uid',
-      location_id: 'required|uid',
       table_id: 'required|uid',
       customer_name: 'required|safe_text',
       customer_phone: 'phone',
@@ -130,7 +139,6 @@ export class OrderController {
 
     const newOrder: IOrderDetail = {
       restaurant_id: get(body, 'restaurant_id', null),
-      location_id: get(body, 'location_id', null),
       table_id: get(body, 'table_id', null),
       status: OrderStatus.WaitingApproval,
       customer_name: get(body, 'customer_name', 'Guest'),
