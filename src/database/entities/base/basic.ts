@@ -9,7 +9,7 @@ import {
   DeepPartial,
   FindManyOptions,
   FindOneOptions,
-  ObjectID,
+  ObjectId,
   RemoveOptions,
   SaveOptions,
 } from 'typeorm';
@@ -51,7 +51,7 @@ export class BasicEntity extends Base {
     this: {
       new (): T;
     } & typeof Base,
-    id?: string | number | Date | ObjectID,
+    id?: string | number | Date | ObjectId,
     restaurant?: any
   ): Promise<T | undefined> {
     const obj = await this.findOne<T>({ where: { id, restaurant_id: restaurant.id } } as any);
