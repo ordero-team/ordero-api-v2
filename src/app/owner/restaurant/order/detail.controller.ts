@@ -5,6 +5,7 @@ import { PermAct, PermOwner } from '@core/services/role.service';
 import { Notification, NotificationType } from '@db/entities/core/notification.entity';
 import { OrderProduct, OrderProductStatus } from '@db/entities/core/order-product.entity';
 import { Order, OrderStatus } from '@db/entities/core/order.entity';
+import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { Table, TableStatus } from '@db/entities/owner/table.entity';
 import { OrderTransformer } from '@db/transformers/order.transformer';
 import { GenericException } from '@lib/exceptions/generic.exception';
@@ -16,6 +17,7 @@ import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { uuid } from '@lib/uid/uuid.library';
 import { Body, Controller, Get, Param, Put, Res, UseGuards } from '@nestjs/common';
+import { In } from 'typeorm';
 
 @Controller(':order_id')
 @UseGuards(OwnerAuthGuard())
@@ -29,6 +31,8 @@ export class DetailController {
             throw new GenericException(`Order ${order.number} must be confirmed first.`);
           }
 
+          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
+
           order.status = action;
           break;
         }
@@ -36,6 +40,8 @@ export class DetailController {
           if (![OrderStatus.Preparing].includes(action)) {
             throw new GenericException(`Order ${order.number} can't be ${action}.`);
           }
+
+          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
 
           order.status = OrderStatus.Preparing;
           break;
@@ -66,6 +72,25 @@ export class DetailController {
           break;
         }
         case OrderStatus.Completed:
+          // @TODO: Decrease stock
+          const orderProducts = await OrderProduct.findBy({ order_id: order.id });
+          const productStocks = await ProductStock.findBy({
+            variant_id: In(orderProducts.map((val) => val.product_variant_id)),
+          });
+
+          for (const stock of productStocks) {
+            const orderProduct = orderProducts.find((val) => val.product_variant_id === stock.variant_id);
+            if (orderProduct) {
+              stock.onhand -= orderProduct.qty;
+              stock.allocated -= orderProduct.qty;
+              stock.actor = ``; // @TODO: Staff LogName
+              stock.last_action = `Order ${order.number}`;
+              await AppDataSource.transaction(async (manager) => {
+                await manager.getRepository(ProductStock).save(stock);
+              });
+            }
+          }
+
           break;
         case OrderStatus.Cancelled: {
           if (![OrderStatus.WaitingApproval].includes(action)) {
