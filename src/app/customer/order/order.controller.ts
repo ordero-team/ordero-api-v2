@@ -24,100 +24,104 @@ export class OrderController {
   constructor(private custService: CustomerService) {}
 
   static async createOrder(newOrder: IOrderDetail, customer: Customer): Promise<Order> {
-    const order = new Order();
-    await AppDataSource.transaction(async (manager) => {
-      const orderProducts = newOrder.products || [];
-      if (!orderProducts.length) {
-        throw new BadRequestException(`Order has no product items`);
-      }
+    try {
+      const order = new Order();
+      await AppDataSource.transaction(async (manager) => {
+        const table = await manager.getRepository(Table).findOneBy({ id: order.table_id, status: TableStatus.Available });
 
-      if (orderProducts.some((row) => row.qty < 1)) {
-        throw new BadRequestException(`Order has invalid product item qty of 0`);
-      }
+        if (!table) {
+          throw new BadRequestException('Sorry, this table is not available right now');
+        }
 
-      const table = await manager.getRepository(Table).findOneBy({ id: order.table_id });
+        const orderProducts = newOrder.products || [];
+        if (!orderProducts.length) {
+          throw new BadRequestException(`Order has no product items`);
+        }
 
-      if (table.status !== TableStatus.Available) {
-        throw new BadRequestException('Sorry, this table is not available right now');
-      }
+        if (orderProducts.some((row) => row.qty < 1)) {
+          throw new BadRequestException(`Order has invalid product item qty of 0`);
+        }
 
-      table.status = TableStatus.InUse;
-      await manager.getRepository(Table).save(table);
+        order.restaurant_id = newOrder.restaurant_id;
+        order.location_id = table.location_id;
+        order.table_id = newOrder.table_id;
+        order.status = newOrder.status;
+        order.note = newOrder.note;
+        order.customer_id = customer?.id || null;
+        order.discount = null;
+        order.number = ''; // Will be update it later
 
-      order.restaurant_id = newOrder.restaurant_id;
-      order.location_id = table.location_id;
-      order.table_id = newOrder.table_id;
-      order.status = newOrder.status;
-      order.note = newOrder.note;
-      order.customer_id = customer?.id || null;
-      order.discount = null;
-      order.number = ''; // Will be update it later
+        await manager.getRepository(Order).save(order);
 
-      await manager.getRepository(Order).save(order);
+        const orderedProducts: OrderProduct[] = [];
+        for (const product of newOrder.products) {
+          const variant = await manager.getRepository(ProductVariant).findOneOrFail({
+            where: {
+              product_id: product.id,
+              variant_id: get(product, 'variant_id', null) || IsNull(),
+              restaurant_id: newOrder.restaurant_id,
+              status: VariantStatus.Available,
+            },
+          });
 
-      const orderedProducts: OrderProduct[] = [];
-      for (const product of newOrder.products) {
-        const variant = await manager.getRepository(ProductVariant).findOneOrFail({
-          where: {
-            product_id: product.id,
-            variant_id: get(product, 'variant_id', null) || IsNull(),
-            restaurant_id: newOrder.restaurant_id,
-            status: VariantStatus.Available,
-          },
-        });
+          const stock = await manager.getRepository(ProductStock).findOneOrFail({
+            where: {
+              restaurant_id: order.restaurant_id,
+              location_id: order.location_id,
+              variant_id: variant.id,
+            },
+          });
 
-        const stock = await manager.getRepository(ProductStock).findOneOrFail({
-          where: {
-            restaurant_id: newOrder.restaurant_id,
-            location_id: newOrder.location_id,
-            variant_id: variant.id,
-          },
-        });
+          if (product.qty > stock.available) {
+            const product = await manager.getRepository(Product).findOneByOrFail({ id: variant.product_id });
 
-        if (product.qty < stock.available) {
-          const product = await manager.getRepository(Product).findOneByOrFail({ id: variant.product_id });
+            let productName = product.name;
 
-          let productName = product.name;
+            if (variant.variant_id) {
+              const vari = await manager.getRepository(Variant).findOneByOrFail({ id: variant.variant_id });
 
-          if (variant.variant_id) {
-            const vari = await manager.getRepository(Variant).findOneByOrFail({ id: variant.variant_id });
+              productName += ` - ${vari.name}`;
+            }
 
-            productName += ` - ${vari.name}`;
+            throw new BadRequestException(`Sorry, ${productName} stock is insufficient`);
           }
 
-          throw new BadRequestException(`Sorry, ${productName} stock is insufficient`);
+          let orderProduct = new OrderProduct();
+
+          const checkOrderProduct = await manager.getRepository(OrderProduct).findOneBy({
+            order_id: order.id,
+            product_variant_id: variant.id,
+          });
+          if (checkOrderProduct) {
+            orderProduct = checkOrderProduct;
+          }
+
+          orderProduct.order_id = order.id;
+          orderProduct.product_variant_id = variant.id;
+          orderProduct.qty = product.qty;
+          orderProduct.price = variant.price * product.qty;
+          orderProduct.status = OrderProductStatus.WaitingApproval;
+          await manager.getRepository(OrderProduct).save(orderProduct);
+
+          orderedProducts.push(orderProduct);
         }
 
-        let orderProduct = new OrderProduct();
-
-        const checkOrderProduct = await manager.getRepository(OrderProduct).findOneBy({
-          order_id: order.id,
-          product_variant_id: variant.id,
+        // Updare Order Number
+        await manager.getRepository(Order).update(order.id, {
+          number: sequenceNumber(order.uid),
+          gross_total: orderedProducts.reduce((price, a) => price + a.price, 0),
         });
-        if (checkOrderProduct) {
-          orderProduct = checkOrderProduct;
-        }
 
-        orderProduct.order_id = order.id;
-        orderProduct.product_variant_id = variant.id;
-        orderProduct.qty = product.qty;
-        orderProduct.price = variant.price * product.qty;
-        orderProduct.status = OrderProductStatus.WaitingApproval;
-        await manager.getRepository(OrderProduct).save(orderProduct);
-
-        orderedProducts.push(orderProduct);
-      }
-
-      // Updare Order Number
-      await manager.getRepository(Order).update(order.id, {
-        number: sequenceNumber(order.uid),
-        gross_total: orderedProducts.reduce((price, a) => price + a.price, 0),
+        table.status = TableStatus.InUse;
+        await manager.getRepository(Table).save(table);
       });
-    });
 
-    await order.reload();
+      await order.reload();
 
-    return order;
+      return order;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post()
