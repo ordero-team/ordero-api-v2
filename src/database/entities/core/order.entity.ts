@@ -57,6 +57,12 @@ export class Order extends BaseEntity {
   @Column({ nullable: true })
   note: string;
 
+  @Column()
+  customer_name: string;
+
+  @Column({ nullable: true })
+  customer_phone: string;
+
   @Exclude()
   @ForeignColumn()
   customer_id: string;

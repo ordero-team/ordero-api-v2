@@ -2,6 +2,7 @@ import { Me } from '@core/decorators/user.decorator';
 import { AuthGuard } from '@core/guards/auth.guard';
 import { CustomerService } from '@core/services/customer.service';
 import { Customer, CustomerStatus } from '@db/entities/core/customer.entity';
+import { Notification, NotificationType } from '@db/entities/core/notification.entity';
 import { OrderProduct, OrderProductStatus } from '@db/entities/core/order-product.entity';
 import { Order, OrderStatus } from '@db/entities/core/order.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
@@ -14,6 +15,7 @@ import { OrderTransformer } from '@db/transformers/order.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { sequenceNumber } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
+import Socket from '@lib/pubsub/pubsub.lib';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { get } from 'lodash';
@@ -49,6 +51,8 @@ export class OrderController {
         order.note = newOrder.note;
         order.customer_id = customer?.id || null;
         order.discount = null;
+        order.customer_name = newOrder.customer_name;
+        order.customer_phone = newOrder.customer_phone;
         order.number = ''; // Will be update it later
 
         await manager.getRepository(Order).save(order);
@@ -134,50 +138,70 @@ export class OrderController {
       products: 'required|array',
       note: 'safe_text',
     };
-    const validation = Validator.init(body, rules);
-    if (validation.fails()) {
-      throw new ValidationException(validation);
-    }
 
-    const newOrder: IOrderDetail = {
-      restaurant_id: get(body, 'restaurant_id', null),
-      table_id: get(body, 'table_id', null),
-      status: OrderStatus.WaitingApproval,
-      customer_name: get(body, 'customer_name', 'Guest'),
-      customer_phone: get(body, 'customer_phone', null),
-      note: get(body, 'note', null),
-      gross_total: 0,
-      discount: 0,
-      fee: 0,
-      net_total: 0,
-      products: get(body, 'products', []),
-    };
-
-    // @TODO: Manage new or existing customer
-    let customer: Customer = null;
-    if (body.customer_phone) {
-      customer = await Customer.findOneBy({ phone: body.customer_phone });
-
-      if (!customer) {
-        // @TODO: Create new customer and also verify it!
-        customer.name = newOrder.customer_name;
-        customer.phone = newOrder.customer_phone;
-        const newCustomer = await this.custService.register(customer);
-        const token = await this.custService.login(newCustomer);
-        return response.data(token);
+    try {
+      const validation = Validator.init(body, rules);
+      if (validation.fails()) {
+        throw new ValidationException(validation);
       }
 
-      if (customer.status === CustomerStatus.Verify) {
-        const token = await this.custService.login(customer);
-        return response.data(token);
+      const newOrder: IOrderDetail = {
+        restaurant_id: get(body, 'restaurant_id', null),
+        table_id: get(body, 'table_id', null),
+        status: OrderStatus.WaitingApproval,
+        customer_name: get(body, 'customer_name', 'Guest'),
+        customer_phone: get(body, 'customer_phone', null),
+        note: get(body, 'note', null),
+        gross_total: 0,
+        discount: 0,
+        fee: 0,
+        net_total: 0,
+        products: get(body, 'products', []),
+      };
+
+      // @TODO: Manage new or existing customer
+      let customer: Customer = null;
+      if (body.customer_phone) {
+        customer = await Customer.findOneBy({ phone: body.customer_phone });
+
+        if (!customer) {
+          // @TODO: Create new customer and also verify it!
+          customer.name = newOrder.customer_name;
+          customer.phone = newOrder.customer_phone;
+          const newCustomer = await this.custService.register(customer);
+          const token = await this.custService.login(newCustomer);
+          return response.data(token);
+        }
+
+        if (customer.status === CustomerStatus.Verify) {
+          const token = await this.custService.login(customer);
+          return response.data(token);
+        }
       }
+
+      const order = await OrderController.createOrder(newOrder, customer);
+
+      const notification = new Notification();
+      notification.title = 'New Order';
+      notification.actor = customer ? customer.name : newOrder.customer_name;
+      notification.location_id = order.location_id;
+      notification.restaurant_id = order.restaurant_id;
+      notification.type = NotificationType.OrderCreated;
+      notification.order_id = order.id;
+
+      await AppDataSource.transaction(async (manager) => {
+        await manager.getRepository(Notification).save(notification);
+      });
+
+      Socket.getInstance().notify(notification.location_id, {
+        request_id: order.id,
+        data: notification,
+      });
+
+      return response.item(order, OrderTransformer);
+    } catch (error) {
+      throw error;
     }
-
-    const order = await OrderController.createOrder(newOrder, customer);
-
-    // @TODO: Socket to Cashier
-
-    return response.item(order, OrderTransformer);
   }
 
   @Get()

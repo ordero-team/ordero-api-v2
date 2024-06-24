@@ -2,6 +2,7 @@ import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
 import { PermAct, PermOwner } from '@core/services/role.service';
+import { Notification, NotificationType } from '@db/entities/core/notification.entity';
 import { OrderProduct, OrderProductStatus } from '@db/entities/core/order-product.entity';
 import { Order, OrderStatus } from '@db/entities/core/order.entity';
 import { Table, TableStatus } from '@db/entities/owner/table.entity';
@@ -10,6 +11,7 @@ import { GenericException } from '@lib/exceptions/generic.exception';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { time } from '@lib/helpers/time.helper';
 import { Validator } from '@lib/helpers/validator.helper';
+import Socket from '@lib/pubsub/pubsub.lib';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { Body, Controller, Get, Param, Put, Res, UseGuards } from '@nestjs/common';
@@ -63,20 +65,48 @@ export class DetailController {
           break;
         }
         case OrderStatus.Completed:
-        case OrderStatus.Cancelled:
           break;
+        case OrderStatus.Cancelled: {
+          if (![OrderStatus.WaitingApproval].includes(action)) {
+            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          }
+
+          order.status = OrderStatus.Cancelled;
+          break;
+        }
       }
+
+      const notification = new Notification();
+      notification.title = 'Order Updated';
+      notification.content = JSON.stringify(order);
+      notification.actor = 'System';
+      notification.location_id = order.location_id;
+      notification.restaurant_id = order.restaurant_id;
+      notification.type = NotificationType.OrderUpdate;
+      notification.order_id = order.id;
 
       await AppDataSource.transaction(async (manager) => {
         await manager.getRepository(Order).save(order);
 
-        if (order.status === OrderStatus.Preparing) {
-          await manager.getRepository(OrderProduct).update({ order_id: order.id }, { status: OrderProductStatus.Preparing });
-        } else if ([OrderStatus.Completed, OrderStatus.Cancelled].includes(order.status)) {
+        if ([OrderStatus.Cancelled].includes(order.status)) {
+          await manager.getRepository(OrderProduct).update({ order_id: order.id }, { status: OrderProductStatus.Cancelled });
+        }
+
+        if ([OrderStatus.Completed, OrderStatus.Cancelled].includes(order.status)) {
           const table = await manager.getRepository(Table).findOneBy({ id: order.table_id });
+          if (!table) {
+            throw new Error(`Table not found with ID: ${order.table_id}`);
+          }
           table.status = TableStatus.Available;
           await manager.getRepository(Table).save(table);
         }
+
+        await manager.getRepository(Notification).save(notification);
+      });
+
+      Socket.getInstance().notify(notification.order_id, {
+        request_id: order.id,
+        data: notification,
       });
     } catch (error) {
       throw error;

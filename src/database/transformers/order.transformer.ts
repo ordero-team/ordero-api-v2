@@ -8,7 +8,7 @@ import { RawTransformer } from './raw.transformer';
 
 export class OrderTransformer extends TransformerAbstract {
   get availableInclude() {
-    return ['items', 'table', 'stats'];
+    return ['items', 'table', 'stats', 'location'];
   }
 
   async includeItems(entity: Order) {
@@ -59,6 +59,10 @@ export class OrderTransformer extends TransformerAbstract {
     data.total_preparing_items = await OrderProduct.countBy({ order_id: entity.id, status: OrderProductStatus.Preparing });
 
     return this.item(data, RawTransformer);
+  }
+
+  async includeLocation(entity: Order) {
+    return await entity.location;
   }
 
   transform(entity: Order) {

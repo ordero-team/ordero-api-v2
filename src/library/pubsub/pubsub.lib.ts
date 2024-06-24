@@ -1,3 +1,4 @@
+import { Notification } from '@db/entities/core/notification.entity';
 import { config } from '@lib/helpers/config.helper';
 import { Server } from 'socket.io';
 import { SocketIOInstance } from './socketio.pubsub';
