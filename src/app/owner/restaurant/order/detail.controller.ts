@@ -14,6 +14,7 @@ import { Validator } from '@lib/helpers/validator.helper';
 import Socket from '@lib/pubsub/pubsub.lib';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
+import { uuid } from '@lib/uid/uuid.library';
 import { Body, Controller, Get, Param, Put, Res, UseGuards } from '@nestjs/common';
 
 @Controller(':order_id')
@@ -105,7 +106,7 @@ export class DetailController {
       });
 
       Socket.getInstance().notify(notification.order_id, {
-        request_id: order.id,
+        request_id: uuid(),
         data: notification,
       });
     } catch (error) {

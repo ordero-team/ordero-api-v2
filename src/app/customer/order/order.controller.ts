@@ -17,6 +17,7 @@ import { sequenceNumber } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import Socket from '@lib/pubsub/pubsub.lib';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
+import { uuid } from '@lib/uid/uuid.library';
 import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { get } from 'lodash';
 import { IsNull } from 'typeorm';
@@ -183,6 +184,7 @@ export class OrderController {
 
       const notification = new Notification();
       notification.title = 'New Order';
+      notification.content = `Order ${order.number} has been created`;
       notification.actor = customer ? customer.name : newOrder.customer_name;
       notification.location_id = order.location_id;
       notification.restaurant_id = order.restaurant_id;
@@ -194,7 +196,7 @@ export class OrderController {
       });
 
       Socket.getInstance().notify(notification.location_id, {
-        request_id: order.id,
+        request_id: uuid(),
         data: notification,
       });
 

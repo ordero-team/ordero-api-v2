@@ -1,5 +1,4 @@
-import { Column, CoreEntity, ForeignColumn } from '@lib/typeorm/decorators';
-import { Exclude } from 'class-transformer';
+import { BooleanColumn, Column, CoreEntity, ForeignColumn } from '@lib/typeorm/decorators';
 import { ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base';
 import { Location } from '../owner/location.entity';
@@ -13,6 +12,8 @@ export enum NotificationType {
 
 @CoreEntity()
 export class Notification extends BaseEntity {
+  public static sortable = ['created_at'];
+
   @Column({ length: 100 })
   type: NotificationType;
 
@@ -25,21 +26,21 @@ export class Notification extends BaseEntity {
   @Column({ length: 100 })
   actor: string;
 
-  @Exclude()
+  @BooleanColumn({ default: 0 })
+  is_read: boolean;
+
   @ForeignColumn()
   location_id: string;
 
   @ManyToOne(() => Location, { onDelete: 'CASCADE' })
   location: Location;
 
-  @Exclude()
   @ForeignColumn()
   restaurant_id: string;
 
   @ManyToOne(() => Restaurant, { onDelete: 'CASCADE' })
   restaurant: Restaurant;
 
-  @Exclude()
   @ForeignColumn()
   order_id: string;
 
