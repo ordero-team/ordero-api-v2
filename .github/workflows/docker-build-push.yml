@@ -27,10 +27,10 @@ jobs:
     - name: Set Docker tag
       id: set-tag
       run: |
-        if [[ ${{ github.ref }} == 'refs/heads/develop' ]]; then
-          echo "DOCKER_TAG=develop" >> $GITHUB_OUTPUT
-        elif [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
+        if [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
           echo "DOCKER_TAG=latest" >> $GITHUB_OUTPUT
+        else
+          echo "DOCKER_TAG=develop" >> $GITHUB_OUTPUT
         fi
         
     - name: Build and push

@@ -45,7 +45,6 @@ export class ProductStock extends BaseEntity {
   @ManyToOne(() => Product, (variant) => variant.stocks)
   product: Promise<Product>;
 
-  @Exclude()
   @ForeignColumn()
   location_id: string;
 

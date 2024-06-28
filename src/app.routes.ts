@@ -8,6 +8,8 @@ import { OwnerModule } from './app/owner/owner.module';
 import { OwnerProfileModule } from './app/owner/profile/profile.module';
 import { OwnerCategoryModule } from './app/owner/restaurant/category/category.module';
 import { OwnerLocationModule } from './app/owner/restaurant/location/location.module';
+import { OwnerNotificationModule } from './app/owner/restaurant/notification/notification.module';
+import { OwnerOrderModule } from './app/owner/restaurant/order/order.module';
 import { OwnerProductModule } from './app/owner/restaurant/product/product.module';
 import { OwnerRestaurantModule } from './app/owner/restaurant/restaurant.module';
 import { OwnerStaffModule } from './app/owner/restaurant/staff/staff.module';
@@ -56,6 +58,14 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/stocks',
             module: OwnerStockModule,
+          },
+          {
+            path: '/:restaurant_id/orders',
+            module: OwnerOrderModule,
+          },
+          {
+            path: '/:restaurant_id/notifications',
+            module: OwnerNotificationModule,
           },
         ],
       },

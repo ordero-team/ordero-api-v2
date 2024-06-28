@@ -21,6 +21,8 @@ export enum PermOwner {
   Variant = 'variant',
   Product = 'product',
   Stock = 'stock',
+  Order = 'order',
+  Notification = 'notification',
 }
 
 export const DefaultPerms = [PermOwner.Profile, PermOwner.Restaurant];
@@ -45,6 +47,8 @@ export class RoleService implements IDynamicStorageRbac {
       [PermOwner.Variant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Product]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Stock]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermOwner.Order]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermOwner.Notification]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
     };
 
     return {

@@ -1,10 +1,10 @@
 import { Restaurant, RestaurantStatus } from '@db/entities/owner/restaurant.entity';
-import { Table, TableStatus } from '@db/entities/owner/table.entity';
+import { Table } from '@db/entities/owner/table.entity';
 import { TableTransformer } from '@db/transformers/table.transformer';
 
 import { GenericException } from '@lib/exceptions/generic.exception';
 import { Controller, Get, NotFoundException, Param, Res } from '@nestjs/common';
-import { capitalize, get } from 'lodash';
+import { get } from 'lodash';
 
 @Controller()
 export class TableController {
@@ -15,10 +15,6 @@ export class TableController {
 
     if (!table) {
       throw new NotFoundException('Table not found!');
-    }
-
-    if (table.status !== TableStatus.Available) {
-      throw new GenericException(`Can't use Table ${table.number}, because it's ${capitalize(table.status)}`);
     }
 
     const restaurant = await Restaurant.findOneBy({ id: table.restaurant_id });
