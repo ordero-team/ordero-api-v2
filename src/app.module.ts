@@ -10,7 +10,7 @@ import { routes } from './app.routes';
 import { CustomerModule } from './app/customer/customer.module';
 import { OwnerModule } from './app/owner/owner.module';
 import { RestaurantModule } from './app/restaurant/restaurant.module';
-import { CashierModule } from './app/staff/staff.module';
+import { StaffModule } from './app/staff/staff.module';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { CashierModule } from './app/staff/staff.module';
     OwnerModule,
     RestaurantModule,
     CustomerModule,
-    CashierModule,
+    StaffModule,
   ],
   controllers: [AppController],
   providers: [SocketioGateway],
