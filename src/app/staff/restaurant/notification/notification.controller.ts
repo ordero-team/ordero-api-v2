@@ -1,8 +1,8 @@
 import { Loc } from '@core/decorators/location.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
-import { OwnerAuthGuard } from '@core/guards/auth.guard';
-import { OwnerGuard } from '@core/guards/owner.guard';
-import { PermAct, PermOwner } from '@core/services/role.service';
+import { StaffAuthGuard } from '@core/guards/auth.guard';
+import { StaffGuard } from '@core/guards/staff.guard';
+import { PermAct, PermStaff } from '@core/services/role.service';
 import { Notification } from '@db/entities/core/notification.entity';
 import { Location } from '@db/entities/owner/location.entity';
 import { Restaurant } from '@db/entities/owner/restaurant.entity';
@@ -15,11 +15,11 @@ import { Body, Controller, Get, Put, Res, UseGuards } from '@nestjs/common';
 import { In } from 'typeorm';
 
 @Controller()
-@UseGuards(OwnerAuthGuard())
+@UseGuards(StaffAuthGuard())
 export class NotificationController {
   @Get()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Notification}@${PermAct.R}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Notification}@${PermAct.R}`)
   async index(@Rest() rest: Restaurant, @Loc() loc: Location, @Res() response) {
     const query = AppDataSource.createQueryBuilder(Notification, 't1').where({ restaurant_id: rest.id });
 
@@ -32,8 +32,8 @@ export class NotificationController {
   }
 
   @Put()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Notification}@${PermAct.U}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Notification}@${PermAct.U}`)
   async mark(@Body() body, @Res() response) {
     const rules = {
       ids: `required|array|uid`,

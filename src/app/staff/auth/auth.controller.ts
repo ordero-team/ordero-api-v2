@@ -1,6 +1,6 @@
 import { jwt } from '@config/jwt.config';
-import { OwnerGuard } from '@core/guards/owner.guard';
-import { PermAct, PermOwner } from '@core/services/role.service';
+import { StaffGuard } from '@core/guards/staff.guard';
+import { PermAct, PermStaff } from '@core/services/role.service';
 import { StaffBlacklist } from '@db/entities/staff/blacklist.entity';
 import { StaffSession } from '@db/entities/staff/session.entity';
 import { StaffUser } from '@db/entities/staff/user.entity';
@@ -83,8 +83,8 @@ export class StaffAuthController {
   }
 
   @Delete('/logout')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Profile}@${PermAct.D}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Profile}@${PermAct.D}`)
   async deleteLogout(@Req() request, @Res() response) {
     const token = StaffAuthController.token(request);
     if (token) {

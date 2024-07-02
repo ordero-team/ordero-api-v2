@@ -35,9 +35,11 @@ export enum PermStaff {
   Variant = 'staff_variant',
   Product = 'staff_product',
   Stock = 'staff_stock',
+  Order = 'staff_order',
+  Notification = 'staff_notification',
 }
 
-export const DefaultPerms = [PermOwner.Profile, PermOwner.Restaurant];
+export const DefaultPerms = [PermOwner.Profile, PermOwner.Restaurant, PermStaff.Profile];
 
 @Injectable()
 export class RoleService implements IDynamicStorageRbac {
@@ -72,6 +74,8 @@ export class RoleService implements IDynamicStorageRbac {
       [PermStaff.Variant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermStaff.Product]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermStaff.Stock]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermStaff.Order]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermStaff.Notification]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
     };
 
     return {

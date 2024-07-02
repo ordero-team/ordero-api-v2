@@ -1,6 +1,6 @@
-import { Role } from '@db/entities/core/role.entity';
 import { Location } from '@db/entities/owner/location.entity';
 import { Restaurant } from '@db/entities/owner/restaurant.entity';
+import { StaffRole } from '@db/entities/staff/role.entity';
 import { StaffUser } from '@db/entities/staff/user.entity';
 import { GuardException } from '@lib/exceptions/guard.exception';
 import { TokenException } from '@lib/exceptions/token.exception';
@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { get } from 'lodash';
 
 const validateRestaurant = async (request: any) => {
+  console.log(request);
   const user: StaffUser = request.user;
   if (!user) {
     throw new TokenException('Getting user was failed');
@@ -26,7 +27,7 @@ const validateRestaurant = async (request: any) => {
     throw new TokenException('Getting restaurant was failed');
   }
 
-  const roles = await Role.findByRestaurant(restaurant);
+  const roles = await StaffRole.findBy({ slug: user.role_slug });
   const role = roles.find((row) => row.slug !== 'owner');
   if (!role) {
     throw new GuardException('Getting role was failed');

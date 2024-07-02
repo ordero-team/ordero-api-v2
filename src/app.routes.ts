@@ -19,6 +19,8 @@ import { OwnerVariantModule } from './app/owner/restaurant/variant/variant.modul
 import { RestaurantModule } from './app/restaurant/restaurant.module';
 import { StaffAuthModule } from './app/staff/auth/auth.module';
 import { StaffProfileModule } from './app/staff/profile/profile.module';
+import { StafffNotificationModule } from './app/staff/restaurant/notification/notification.module';
+import { StaffOrderModule } from './app/staff/restaurant/order/order.module';
 import { StaffRestaurantModule } from './app/staff/restaurant/restaurant.module';
 import { StaffModule } from './app/staff/staff.module';
 
@@ -87,32 +89,12 @@ export const routes: Routes = [
         module: StaffRestaurantModule,
         children: [
           {
-            path: '/:restaurant_id/locations',
-            module: OwnerLocationModule,
+            path: '/:restaurant_id/orders',
+            module: StaffOrderModule,
           },
           {
-            path: '/:restaurant_id/tables',
-            module: OwnerTableModule,
-          },
-          {
-            path: '/:restaurant_id/staff',
-            module: OwnerStaffModule,
-          },
-          {
-            path: '/:restaurant_id/categories',
-            module: OwnerCategoryModule,
-          },
-          {
-            path: '/:restaurant_id/variants',
-            module: OwnerVariantModule,
-          },
-          {
-            path: '/:restaurant_id/products',
-            module: OwnerProductModule,
-          },
-          {
-            path: '/:restaurant_id/stocks',
-            module: OwnerStockModule,
+            path: '/:restaurant_id/notifications',
+            module: StafffNotificationModule,
           },
         ],
       },

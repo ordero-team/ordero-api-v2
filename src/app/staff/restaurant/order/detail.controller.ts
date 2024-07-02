@@ -1,14 +1,14 @@
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { Me } from '@core/decorators/user.decorator';
-import { OwnerAuthGuard } from '@core/guards/auth.guard';
-import { OwnerGuard } from '@core/guards/owner.guard';
-import { PermAct, PermOwner } from '@core/services/role.service';
+import { StaffAuthGuard } from '@core/guards/auth.guard';
+import { StaffGuard } from '@core/guards/staff.guard';
+import { PermAct, PermStaff } from '@core/services/role.service';
 import { Notification, NotificationType } from '@db/entities/core/notification.entity';
 import { OrderProduct, OrderProductStatus } from '@db/entities/core/order-product.entity';
 import { Order, OrderStatus } from '@db/entities/core/order.entity';
-import { Owner } from '@db/entities/owner/owner.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { Table, TableStatus } from '@db/entities/owner/table.entity';
+import { StaffUser } from '@db/entities/staff/user.entity';
 import { OrderTransformer } from '@db/transformers/order.transformer';
 import { GenericException } from '@lib/exceptions/generic.exception';
 import { ValidationException } from '@lib/exceptions/validation.exception';
@@ -22,9 +22,9 @@ import { Body, Controller, Get, Param, Put, Res, UseGuards } from '@nestjs/commo
 import { In } from 'typeorm';
 
 @Controller(':order_id')
-@UseGuards(OwnerAuthGuard())
+@UseGuards(StaffAuthGuard())
 export class DetailController {
-  static async action(order: Order, action: OrderStatus, actor: Owner) {
+  static async action(order: Order, action: OrderStatus, actor: StaffUser) {
     try {
       switch (order.status) {
         case OrderStatus.WaitingApproval: {
@@ -142,17 +142,17 @@ export class DetailController {
   }
 
   @Get()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Order}@${PermAct.R}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Order}@${PermAct.R}`)
   async show(@Rest() rest, @Res() response, @Param() param) {
     const order = await Order.findOneByOrFail({ restaurant_id: rest.id, id: param.order_id });
     await response.item(order, OrderTransformer);
   }
 
   @Put()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Order}@${PermAct.U}`)
-  async action(@Body() body, @Param() param, @Res() response, @Me() me: Owner) {
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Order}@${PermAct.U}`)
+  async action(@Body() body, @Param() param, @Res() response, @Me() me: StaffUser) {
     const rules = {
       action: `required|in:${Object.values(OrderStatus)
         .filter((val) => val !== 'waiting_approval')

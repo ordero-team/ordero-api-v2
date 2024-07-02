@@ -22,6 +22,7 @@ export class StaffProfileController {
   @UseGuards(StaffGuard)
   @Permissions(`${PermStaff.Profile}@${PermAct.R}`)
   async me(@Me() me: StaffUser, @Res() response) {
+    console.log(me);
     return response.item(me, StaffTransformer);
   }
 

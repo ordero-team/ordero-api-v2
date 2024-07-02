@@ -65,7 +65,7 @@
     "libphonenumber-js": "^1.10.12",
     "lodash": "^4.17.21",
     "mysql-import": "^5.0.21",
-    "mysql2": "^3.10.1",
+    "mysql2": "^3.10.2",
     "nest-router": "^1.0.9",
     "nest-winston": "^1.7.0",
     "node-cache": "^5.1.2",
