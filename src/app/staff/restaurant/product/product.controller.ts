@@ -1,24 +1,24 @@
 import { Rest } from '@core/decorators/restaurant.decorator';
-import { OwnerAuthGuard } from '@core/guards/auth.guard';
-import { OwnerGuard } from '@core/guards/owner.guard';
+import { StaffAuthGuard } from '@core/guards/auth.guard';
+import { StaffGuard } from '@core/guards/staff.guard';
 import { ProductService } from '@core/services/product.service';
-import { PermAct, PermOwner } from '@core/services/role.service';
+import { PermAct, PermStaff } from '@core/services/role.service';
 import { Product, ProductStatus } from '@db/entities/owner/product.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 
 @Controller()
-@UseGuards(OwnerAuthGuard())
+@UseGuards(StaffAuthGuard())
 export class ProductController {
   constructor(private productService: ProductService) {}
 
   @Get()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.R}`)
   async index(@Rest() rest, @Res() response) {
     const products = await AppDataSource.createQueryBuilder(Product, 't1')
       .where({ restaurant_id: rest.id })
@@ -29,8 +29,8 @@ export class ProductController {
   }
 
   @Post()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.C}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.C}`)
   async create(@Rest() rest, @Body() body, @Res() response) {
     const rules = {
       sku: 'required|sku',
@@ -44,6 +44,11 @@ export class ProductController {
     const validation = Validator.init(body, rules);
     if (validation.fails()) {
       throw new ValidationException(validation);
+    }
+
+    const productExist = await Product.exists({ where: { sku: body.sku, restaurant_id: rest.id } });
+    if (productExist) {
+      throw new BadRequestException('Product SKU has already existed.');
     }
 
     const prod = await this.productService.create(rest, body);

@@ -19,11 +19,14 @@ import { OwnerVariantModule } from './app/owner/restaurant/variant/variant.modul
 import { RestaurantModule } from './app/restaurant/restaurant.module';
 import { StaffAuthModule } from './app/staff/auth/auth.module';
 import { StaffProfileModule } from './app/staff/profile/profile.module';
+import { StaffCategoryModule } from './app/staff/restaurant/category/category.module';
 import { StafffNotificationModule } from './app/staff/restaurant/notification/notification.module';
 import { StaffOrderModule } from './app/staff/restaurant/order/order.module';
+import { StaffProductModule } from './app/staff/restaurant/product/product.module';
 import { StaffRestaurantModule } from './app/staff/restaurant/restaurant.module';
 import { StaffStockModule } from './app/staff/restaurant/stock/stock.module';
 import { StaffTableModule } from './app/staff/restaurant/table/table.module';
+import { StaffVariantModule } from './app/staff/restaurant/variant/variant.module';
 import { StaffModule } from './app/staff/staff.module';
 
 export const routes: Routes = [
@@ -101,6 +104,18 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/tables',
             module: StaffTableModule,
+          },
+          {
+            path: '/:restaurant_id/categories',
+            module: StaffCategoryModule,
+          },
+          {
+            path: '/:restaurant_id/variants',
+            module: StaffVariantModule,
+          },
+          {
+            path: '/:restaurant_id/products',
+            module: StaffProductModule,
           },
           {
             path: '/:restaurant_id/notifications',

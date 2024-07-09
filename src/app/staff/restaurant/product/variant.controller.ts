@@ -1,8 +1,8 @@
 import { Rest } from '@core/decorators/restaurant.decorator';
-import { OwnerAuthGuard } from '@core/guards/auth.guard';
-import { OwnerGuard } from '@core/guards/owner.guard';
+import { StaffAuthGuard } from '@core/guards/auth.guard';
+import { StaffGuard } from '@core/guards/staff.guard';
 import { ProductService } from '@core/services/product.service';
-import { PermAct, PermOwner } from '@core/services/role.service';
+import { PermAct, PermStaff } from '@core/services/role.service';
 import { ProductVariant } from '@db/entities/owner/product-variant.entity';
 import { Product } from '@db/entities/owner/product.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
@@ -12,21 +12,21 @@ import { Permissions } from '@lib/rbac';
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 
 @Controller(':product_id/variants')
-@UseGuards(OwnerAuthGuard())
+@UseGuards(StaffAuthGuard())
 export class VariantController {
   constructor(private productService: ProductService) {}
 
   @Get()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.R}`)
   async getVariants(@Rest() rest, @Res() response, @Param() param) {
     const result = await this.productService.getVariants(param.product_id, rest);
     return response.data(result);
   }
 
   @Post()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.U}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.U}`)
   async addVariant(@Body() body, @Res() response, @Param() param, @Rest() rest) {
     const rules = {
       variant_ids: 'required|array',
@@ -42,8 +42,8 @@ export class VariantController {
   }
 
   @Delete('/:variant_id')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.D}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.D}`)
   async deleteVariant(@Param() param, @Res() response, @Rest() rest) {
     if (!param.variant_id) {
       throw new BadRequestException();
