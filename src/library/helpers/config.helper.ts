@@ -38,6 +38,10 @@ class ConfigService {
     return path.toString();
   }
 
+  public getAppURI() {
+    return `${this.get('APP_URI')}`;
+  }
+
   public getAssetURI() {
     return `${this.get('API_URI')}/assets`;
   }

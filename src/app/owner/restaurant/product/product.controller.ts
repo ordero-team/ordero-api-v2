@@ -1,23 +1,21 @@
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
+import { ProductService } from '@core/services/product.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
-import { Category } from '@db/entities/owner/category.entity';
-import { ProductCategory } from '@db/entities/owner/product-category.entity';
-import { ProductVariant } from '@db/entities/owner/product-variant.entity';
 import { Product, ProductStatus } from '@db/entities/owner/product.entity';
-import { Variant, VariantStatus } from '@db/entities/owner/variant.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
-import { BadRequestException, Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
-import { In } from 'typeorm';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
 export class ProductController {
+  constructor(private productService: ProductService) {}
+
   @Get()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Product}@${PermAct.R}`)
@@ -48,72 +46,7 @@ export class ProductController {
       throw new ValidationException(validation);
     }
 
-    const productExist = await Product.exists({ where: { sku: body.sku, restaurant_id: rest.id } });
-    if (productExist) {
-      throw new BadRequestException('Product SKU has already existed.');
-    }
-
-    const prod = new Product();
-    prod.sku = body.sku;
-    prod.name = body.name;
-    prod.description = body.description;
-    prod.price = body.price;
-    prod.status = body.status;
-    prod.restaurant_id = rest.id;
-
-    let categories: Category[] = [];
-    let variants: Variant[] = [];
-
-    if (body.category_ids.length > 0) {
-      categories = await Category.find({ where: { id: In(body.category_ids), restaurant_id: rest.id } });
-    }
-
-    if (body.variant_ids.length > 0) {
-      variants = await Variant.find({ where: { id: In(body.variant_ids), restaurant_id: rest.id } });
-    }
-
-    await AppDataSource.transaction(async (manager) => {
-      // Save Product
-      await manager.getRepository(Product).save(prod);
-
-      // Save Category
-      if (categories.length > 0) {
-        const pcats: ProductCategory[] = [];
-        for (const category of categories) {
-          const pcat = new ProductCategory();
-          pcat.product_id = prod.id;
-          pcat.category_id = category.id;
-          pcats.push(pcat);
-        }
-
-        await manager.getRepository(ProductCategory).save(pcats);
-      }
-
-      const pvars: ProductVariant[] = [];
-
-      // Create default variant for single product
-      const pvar = new ProductVariant();
-      pvar.product_id = prod.id;
-      pvar.price = prod.price;
-      pvar.status = VariantStatus.Available;
-      pvar.restaurant_id = rest.id;
-      pvars.push(pvar);
-
-      // Save Variants
-      if (variants.length > 0) {
-        for (const variant of variants) {
-          const vari = new ProductVariant();
-          vari.status = variant.status;
-          vari.product_id = prod.id;
-          vari.variant_id = variant.id;
-          vari.price = variant.price;
-          vari.restaurant_id = rest.id;
-          pvars.push(vari);
-        }
-      }
-
-      await manager.getRepository(ProductVariant).save(pvars);
-    });
+    const prod = await this.productService.create(rest, body);
 
     return response.item(prod, ProductTransformer);
   }

@@ -71,6 +71,7 @@ const development: TypeOrmModuleOptions = {
   username: config.get('DATABASE_USER'),
   password: config.get('DATABASE_PASSWORD'),
   database: config.get('DATABASE_NAME'),
+  synchronize: true,
 };
 
 export const database: TypeOrmModuleOptions = config.isDevelopment() ? development : production;

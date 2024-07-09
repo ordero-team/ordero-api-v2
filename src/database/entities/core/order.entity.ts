@@ -8,7 +8,7 @@ import {
   StatusColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { Column, Generated, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Brackets, Column, Generated, Index, JoinColumn, ManyToOne, OneToMany, SelectQueryBuilder } from 'typeorm';
 import { Location } from '../owner/location.entity';
 import { Restaurant } from '../owner/restaurant.entity';
 import { Table } from '../owner/table.entity';
@@ -20,28 +20,33 @@ export enum OrderStatus {
   Confirmed = 'confirmed',
   Preparing = 'preparing',
   Served = 'served',
+  WaitingPayment = 'waiting_payment',
   Completed = 'completed',
   Cancelled = 'cancelled',
 }
 
 @CoreEntity({ autoIncrement: 202410000001 })
 export class Order extends BaseEntity {
+  public static sortable = ['number', 'status', 'created_at'];
+  public static searchable = ['search'];
+
   @Exclude()
   @Generated('increment')
   @NotNullColumn({ type: 'bigint', unique: true })
   uid: number;
 
+  @Index()
   @Column({ length: 50 })
   number: string;
 
   @PriceColumn()
-  gross_total: string;
+  gross_total: number;
 
   @PriceColumn()
-  discount: string;
+  discount: number;
 
   @PriceColumn()
-  net_total: string;
+  net_total: number;
 
   @DateTimeColumn()
   billed_at: Date;
@@ -51,6 +56,12 @@ export class Order extends BaseEntity {
 
   @Column({ nullable: true })
   note: string;
+
+  @Column()
+  customer_name: string;
+
+  @Column({ nullable: true })
+  customer_phone: string;
 
   @Exclude()
   @ForeignColumn()
@@ -87,4 +98,12 @@ export class Order extends BaseEntity {
   @Exclude()
   @OneToMany(() => OrderProduct, (op) => op.order)
   order_products: Promise<OrderProduct[]>;
+
+  static onFilterSearch(value: string, builder: SelectQueryBuilder<Order>) {
+    builder.nextWhere(
+      new Brackets((qb) => {
+        qb.where('t1.number LIKE :query', { query: `%${value}%` });
+      })
+    );
+  }
 }

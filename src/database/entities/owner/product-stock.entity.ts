@@ -30,7 +30,6 @@ export class ProductStock extends BaseEntity {
   @Column({ length: 100, nullable: true })
   actor: string;
 
-  @Exclude()
   @ForeignColumn()
   variant_id: string;
 
@@ -46,7 +45,6 @@ export class ProductStock extends BaseEntity {
   @ManyToOne(() => Product, (variant) => variant.stocks)
   product: Promise<Product>;
 
-  @Exclude()
   @ForeignColumn()
   location_id: string;
 

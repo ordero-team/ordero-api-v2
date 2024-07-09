@@ -5,8 +5,6 @@ import { OwnerGuard } from '@core/guards/owner.guard';
 import { AwsService } from '@core/services/aws.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { Media } from '@db/entities/core/media.entity';
-import { Category } from '@db/entities/owner/category.entity';
-import { ProductCategory } from '@db/entities/owner/product-category.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { Product } from '@db/entities/owner/product.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
@@ -15,7 +13,7 @@ import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
-import { In, Not } from 'typeorm';
+import { Not } from 'typeorm';
 
 @Controller(':product_id')
 @UseGuards(OwnerAuthGuard())
@@ -92,57 +90,6 @@ export class DetailController {
     const media = await Media.findOrFail({ where: { id: param.image_id, product_id: product.id } });
 
     await this.aws.removeFile(media);
-
-    return response.noContent();
-  }
-
-  @Post('/categories')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.U}`)
-  async addCategory(@Body() body, @Res() response, @Param() param, @Rest() rest) {
-    const rules = {
-      category_ids: 'required|array|uid',
-    };
-    const validation = Validator.init(body, rules);
-    if (validation.fails()) {
-      throw new ValidationException(validation);
-    }
-
-    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
-    const prodCategories: ProductCategory[] = [];
-
-    const categories = await Category.findBy({ id: In(body.category_ids) });
-    for (const category of categories) {
-      const isExist = await ProductCategory.exists({ where: { product_id: product.id, category_id: category.id } });
-      if (isExist) {
-        continue;
-      }
-
-      const pcat = new ProductCategory();
-      pcat.product_id = product.id;
-      pcat.category_id = category.id;
-      prodCategories.push(pcat);
-    }
-
-    if (prodCategories.length > 0) {
-      await ProductCategory.save(prodCategories);
-    }
-
-    await response.item(product, ProductTransformer);
-  }
-
-  @Delete('/categories/:category_id')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.D}`)
-  async deleteCategory(@Param() param, @Res() response, @Rest() rest) {
-    if (!param.category_id) {
-      throw new BadRequestException();
-    }
-
-    const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
-    const category = await ProductCategory.findOneByOrFail({ id: param.category_id, product_id: product.id });
-
-    await category.remove();
 
     return response.noContent();
   }

@@ -26,7 +26,7 @@ export class Restaurant extends BaseEntity {
   @PhoneColumn()
   phone: string;
 
-  @Column({ type: 'longtext' })
+  @Column({ type: 'longtext', nullable: true })
   description: string;
 
   @Column()

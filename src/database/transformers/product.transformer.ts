@@ -6,10 +6,11 @@ import { In } from 'typeorm';
 import { CategoryTransformer } from './category.transformer';
 import { MediaTransformer } from './media.transformer';
 import { ProductVariantTransformer } from './product-variant.transformer';
+import { RawTransformer } from './raw.transformer';
 
 export class ProductTransformer extends TransformerAbstract {
   get availableInclude() {
-    return ['variants', 'categories', 'images'];
+    return ['variants', 'categories', 'images', 'stocks'];
   }
 
   async includeVariants(entity: Product) {
@@ -38,6 +39,15 @@ export class ProductTransformer extends TransformerAbstract {
   async includeImages(entity: Product) {
     const media = await Media.find({ where: { product_id: entity.id } });
     return this.collection(media, MediaTransformer);
+  }
+
+  async includeStocks(entity: Product) {
+    const stocks = await entity.stocks;
+    if (!stocks) {
+      return this.null();
+    }
+
+    return this.collection(stocks, RawTransformer);
   }
 
   transform(entity: Product) {

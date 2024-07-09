@@ -10,9 +10,23 @@ import { DataSource } from 'typeorm';
 import { AuthService } from './services/auth.service';
 import { AwsService } from './services/aws.service';
 import { CustomerService } from './services/customer.service';
+import { PdfService } from './services/pdf.service';
+import { ProductService } from './services/product.service';
 import { RoleService } from './services/role.service';
 import { TaskService } from './services/task.service';
-import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
+import { JwtOwnerStrategy, JwtStaffStrategy, JwtStrategy } from './services/token.service';
+import { UtilService } from './services/util.service';
+
+const services = [
+  AwsService,
+  TaskService,
+  RoleService,
+  AuthService,
+  CustomerService,
+  ProductService,
+  PdfService,
+  UtilService,
+];
 
 @Global()
 @Module({
@@ -24,13 +38,10 @@ import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
     MulterExtendedModule.register(storage.aws),
   ],
   providers: [
-    AwsService,
-    TaskService,
+    ...services,
     JwtStrategy,
-    AuthService,
-    RoleService,
-    CustomerService,
     JwtOwnerStrategy,
+    JwtStaffStrategy,
     {
       provide: DataSource,
       useFactory: async () => {
@@ -38,17 +49,6 @@ import { JwtOwnerStrategy, JwtStrategy } from './services/token.service';
       },
     },
   ],
-  exports: [
-    AwsService,
-    TaskService,
-    RoleService,
-    AuthService,
-    CustomerService,
-    JwtStrategy,
-    JwtOwnerStrategy,
-    DataSource,
-    RBAcModule,
-    MulterExtendedModule,
-  ],
+  exports: [...services, JwtStrategy, JwtOwnerStrategy, JwtStaffStrategy, DataSource, RBAcModule, MulterExtendedModule],
 })
 export class CoreModule {}

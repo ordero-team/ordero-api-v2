@@ -11,7 +11,6 @@ export enum TableStatus {
   InUse = 'in_use',
   Reserved = 'reserved',
   Unvailable = 'unvailable',
-  Empty = 'empty',
 }
 
 @CoreEntity()
@@ -28,7 +27,7 @@ export class Table extends BaseEntity {
 
   @JoinColumn()
   @ManyToOne(() => Restaurant, (restaurant) => restaurant.tables, { onDelete: 'CASCADE' })
-  restaurant: Restaurant;
+  restaurant: Promise<Restaurant>;
 
   @Exclude()
   @ForeignColumn()

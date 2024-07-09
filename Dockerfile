@@ -1,4 +1,4 @@
-FROM node:16.13.1-alpine AS BUILD_IMAGE
+FROM node:16.14.0-alpine AS build_image
 
 # couchbase sdk requirements
 RUN apk update && \
@@ -20,7 +20,7 @@ RUN yarn lint
 # build application
 RUN yarn build
 
-FROM node:16.13.1-alpine
+FROM node:16.14.0-alpine
 
 # Python
 RUN apk update && \
@@ -34,7 +34,7 @@ RUN apk update && \
 
 # Timezone
 RUN apk add --no-cache tzdata
-ENV TZ UTC
+ENV TZ=UTC
 
 # Installs latest Chromium (77) package.
 RUN apk add --no-cache \
@@ -47,13 +47,13 @@ RUN apk add --no-cache \
     ttf-freefont
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium-browser
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 WORKDIR /usr/src/app
 
 # copy from build image
-COPY --from=BUILD_IMAGE /usr/src/app ./
+COPY --from=build_image /usr/src/app ./
 
 EXPOSE 3000
 
