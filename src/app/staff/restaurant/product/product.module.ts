@@ -9,4 +9,4 @@ import { VariantController } from './variant.controller';
   controllers: [ProductController, DetailController, CategoryController, VariantController],
   providers: [],
 })
-export class OwnerProductModule {}
+export class StaffProductModule {}

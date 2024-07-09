@@ -1,9 +1,9 @@
 import { Quero } from '@core/decorators/quero.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
-import { OwnerAuthGuard } from '@core/guards/auth.guard';
-import { OwnerGuard } from '@core/guards/owner.guard';
+import { StaffAuthGuard } from '@core/guards/auth.guard';
+import { StaffGuard } from '@core/guards/staff.guard';
 import { AwsService } from '@core/services/aws.service';
-import { PermAct, PermOwner } from '@core/services/role.service';
+import { PermAct, PermStaff } from '@core/services/role.service';
 import { Media } from '@db/entities/core/media.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { Product } from '@db/entities/owner/product.entity';
@@ -16,21 +16,21 @@ import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, R
 import { Not } from 'typeorm';
 
 @Controller(':product_id')
-@UseGuards(OwnerAuthGuard())
+@UseGuards(StaffAuthGuard())
 export class DetailController {
   constructor(private aws: AwsService) {}
 
   @Get()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.R}`)
   async show(@Rest() rest, @Res() response, @Param() param) {
     const product = await Product.findOneByOrFail({ restaurant_id: rest.id, id: param.product_id });
     await response.item(product, ProductTransformer);
   }
 
   @Put()
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.C}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.C}`)
   async update(@Rest() rest, @Body() body, @Res() response, @Param() param) {
     const rules = {
       sku: 'required|sku',
@@ -65,8 +65,8 @@ export class DetailController {
   }
 
   @Post('/images')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.U}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.U}`)
   async uploadImage(@Param() param, @Req() request, @Res() response, @Rest() rest) {
     const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     if ((await Media.total(product)) >= 5) {
@@ -83,8 +83,8 @@ export class DetailController {
   }
 
   @Delete('/images/:image_id')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.D}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.D}`)
   async deleteImage(@Param() param, @Res() response, @Rest() rest) {
     const product = await Product.findOrFail({ where: { id: param.product_id, restaurant_id: rest.id } });
     const media = await Media.findOrFail({ where: { id: param.image_id, product_id: product.id } });
@@ -95,8 +95,8 @@ export class DetailController {
   }
 
   @Get('/stocks')
-  @UseGuards(OwnerGuard)
-  @Permissions(`${PermOwner.Product}@${PermAct.R}`)
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.R}`)
   async getStocks(@Param() param, @Res() response, @Rest() rest, @Quero() quero) {
     if (!param.product_id) {
       throw new BadRequestException();
