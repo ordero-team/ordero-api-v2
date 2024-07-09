@@ -11,6 +11,11 @@ export enum PubSubEvent {
 export enum PubSubEventType {
   OwnerCreateStock = 'owner_create_stock',
   OwnerGetTableLabel = 'owner_get_table_label',
+
+  // Staff
+  StaffCreateStock = 'staff_create_stock',
+  StaffGetTableLabel = 'staff_get_table_label',
+
   // Customer
   CustomerCreateOrder = 'customer_create_order',
 }

@@ -1,4 +1,4 @@
-import { Routes } from 'nest-router';
+import type { Routes } from 'nest-router';
 import { CustomerAuthModule } from './app/customer/auth/auth.module';
 import { CustomerModule } from './app/customer/customer.module';
 import { CustomerOrderModule } from './app/customer/order/order.module';
@@ -22,6 +22,8 @@ import { StaffProfileModule } from './app/staff/profile/profile.module';
 import { StafffNotificationModule } from './app/staff/restaurant/notification/notification.module';
 import { StaffOrderModule } from './app/staff/restaurant/order/order.module';
 import { StaffRestaurantModule } from './app/staff/restaurant/restaurant.module';
+import { StaffStockModule } from './app/staff/restaurant/stock/stock.module';
+import { StaffTableModule } from './app/staff/restaurant/table/table.module';
 import { StaffModule } from './app/staff/staff.module';
 
 export const routes: Routes = [
@@ -91,6 +93,14 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/orders',
             module: StaffOrderModule,
+          },
+          {
+            path: '/:restaurant_id/stocks',
+            module: StaffStockModule,
+          },
+          {
+            path: '/:restaurant_id/tables',
+            module: StaffTableModule,
           },
           {
             path: '/:restaurant_id/notifications',
