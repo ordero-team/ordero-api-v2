@@ -17,6 +17,7 @@ declare module 'typeorm/query-builder/SelectQueryBuilder' {
     nextWhere(where: string | Brackets | ((qb: this) => string), parameters?: ObjectLiteral): this;
     selectWithAlias(selection: string[]): this;
     search(): this;
+    dateRange(column?: string): this;
     sort(): this;
     getPaged(): Promise<IPagingResponse>;
     getRawPaged(modifiers?: (items: any[]) => Promise<any[]>): Promise<IPagingResponse>;

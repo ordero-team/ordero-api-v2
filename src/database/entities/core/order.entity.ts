@@ -28,7 +28,7 @@ export enum OrderStatus {
 @CoreEntity({ autoIncrement: 202410000001 })
 export class Order extends BaseEntity {
   public static sortable = ['number', 'status', 'created_at'];
-  public static searchable = ['search'];
+  public static searchable = ['search', 'status'];
 
   @Exclude()
   @Generated('increment')
@@ -105,5 +105,12 @@ export class Order extends BaseEntity {
         qb.where('t1.number LIKE :query', { query: `%${value}%` });
       })
     );
+  }
+
+  static onFilterStatus(value: any, builder: SelectQueryBuilder<Order>) {
+    const states = (value || '').split(',').filter((row) => Object.values(OrderStatus).includes(row));
+    if (states.length > 0) {
+      builder.nextWhere('t1.status IN (:status)', { status: states });
+    }
   }
 }

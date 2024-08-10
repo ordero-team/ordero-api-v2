@@ -1,4 +1,5 @@
 import { RequestHelper } from '@lib/helpers/request.helper';
+import { time } from '@lib/helpers/time.helper';
 import { IPagingResponse } from '@type/query';
 import { camelCase, get } from 'lodash';
 import { createQueryBuilder, ObjectLiteral, OrderByCondition } from 'typeorm';
@@ -125,6 +126,33 @@ SelectQueryBuilder.prototype.sort = function (): SelectQueryBuilder<any> {
   });
 
   orders.filter(Boolean).forEach((order) => this.orderBy(order));
+
+  return this;
+};
+
+SelectQueryBuilder.prototype.dateRange = function (column?: string): SelectQueryBuilder<any> {
+  const queries = RequestHelper.getQuery();
+  const entity = this.expressionMap.mainAlias.name;
+  let start = get(queries, 'start', null);
+  let end = get(queries, 'end', null);
+
+  if (start) {
+    start = time.unix(Number(start)).format('YYYY-MM-DD HH:mm:ss');
+  }
+  if (end) {
+    end = time.unix(Number(end)).format('YYYY-MM-DD HH:mm:ss');
+  }
+
+  if (typeof column == 'undefined') {
+    column = 'created_at';
+  }
+
+  if (start) {
+    this.nextWhere(`${entity}.${column} >= :start`, { start });
+  }
+  if (end) {
+    this.nextWhere(`${entity}.${column} <= :end`, { end });
+  }
 
   return this;
 };

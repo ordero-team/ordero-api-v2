@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OwnerCategoryModule } from './category/category.module';
+import { OwnerDashboardModule } from './dashboard/dashboard.module';
 import { OwnerLocationModule } from './location/location.module';
 import { OwnerNotificationModule } from './notification/notification.module';
 import { OwnerOrderModule } from './order/order.module';
@@ -12,6 +13,7 @@ import { OwnerVariantModule } from './variant/variant.module';
 
 @Module({
   imports: [
+    OwnerDashboardModule,
     OwnerLocationModule,
     OwnerTableModule,
     OwnerStaffModule,
