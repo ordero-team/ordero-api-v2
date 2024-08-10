@@ -13,6 +13,7 @@ export enum PermAct {
 export enum PermOwner {
   Profile = 'owner_profile',
   Restaurant = 'owner_restaurant',
+  Dashboard = 'owner_dashboard',
   Staff = 'owner_staff',
   Role = 'owner_role',
   Location = 'owner_location',
@@ -28,6 +29,7 @@ export enum PermOwner {
 export enum PermStaff {
   Profile = 'staff_profile',
   Restaurant = 'staff_restaurant',
+  Dashboard = 'staff_dashboard',
   Role = 'staff_role',
   Location = 'staff_location',
   Table = 'staff_table',
@@ -53,6 +55,7 @@ export class RoleService implements IDynamicStorageRbac {
     const permissions = {
       [PermOwner.Profile]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Restaurant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermOwner.Dashboard]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Staff]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Role]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermOwner.Location]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
@@ -66,6 +69,7 @@ export class RoleService implements IDynamicStorageRbac {
 
       [PermStaff.Profile]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermStaff.Restaurant]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
+      [PermStaff.Dashboard]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       // [PermStaff.Staff]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermStaff.Role]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],
       [PermStaff.Location]: [PermAct.R, PermAct.C, PermAct.U, PermAct.D],

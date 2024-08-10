@@ -1,6 +1,8 @@
 import { Quero } from '@core/decorators/quero.decorator';
+import { Owner } from '@db/entities/owner/owner.entity';
 import base64url from '@lib/helpers/base64.helper';
 import { config } from '@lib/helpers/config.helper';
+import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { Controller, Get, Res } from '@nestjs/common';
 import * as fs from 'fs';
 import { lookup } from 'mime-types';
@@ -10,6 +12,9 @@ import * as path from 'path';
 export class AppController {
   @Get()
   async getHello(@Res() response) {
+    const check = await AppDataSource.createQueryBuilder(Owner, 't1').getCount();
+    console.log({ check });
+
     return response.send('Ordero API V2');
   }
 

@@ -39,6 +39,7 @@ if (isTrue(config.get('REDIS_ENABLED'))) {
   };
 }
 
+// Production
 const production: TypeOrmModuleOptions = {
   ...defaultConfigs,
   logging: false,
@@ -63,6 +64,7 @@ const production: TypeOrmModuleOptions = {
   },
 };
 
+// Development (Local)
 const development: TypeOrmModuleOptions = {
   ...defaultConfigs,
   logging: config.isDebugging(),
@@ -71,7 +73,6 @@ const development: TypeOrmModuleOptions = {
   username: config.get('DATABASE_USER'),
   password: config.get('DATABASE_PASSWORD'),
   database: config.get('DATABASE_NAME'),
-  synchronize: true,
 };
 
 export const database: TypeOrmModuleOptions = config.isDevelopment() ? development : production;
