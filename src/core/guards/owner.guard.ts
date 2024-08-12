@@ -75,7 +75,6 @@ export class OwnerGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     const permissions = this.reflector.get<string[]>('Permissions', context.getHandler());
-    console.log({ permissions });
     if (!permissions) {
       throw new GuardException('Bad permission');
     }
