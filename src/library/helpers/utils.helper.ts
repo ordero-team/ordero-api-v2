@@ -257,7 +257,7 @@ export const getChartData = async (
   { start, end }: { start: Date; end: Date },
   data: any[],
   columnName: string
-): Promise<{ id: string; count: number; total: number; label: string }[]> => {
+): Promise<{ id: string; count: number; total: number; label: string; labelType: 'daily' | 'hourly' }[]> => {
   start =
     start ||
     time(Math.min(...data.map((v) => v.created_at)))
@@ -279,12 +279,13 @@ export const getChartData = async (
     const groupedData = groupBy(data, (o) => time(o.created_at).format(formatTime));
     const label = timeCounter.format(formatTime);
     const total = groupedData[label]?.reduce((prevValue, data) => prevValue + Number(data[columnName]), 0) || 0;
-    const otbCount = groupedData[label]?.length || 0;
+    const dataCount = groupedData[label]?.length || 0;
     const result = {
       id: uuid(),
-      count: otbCount,
+      count: dataCount,
       total,
-      label,
+      label: timeCounter,
+      labelType: timeDiffType,
     };
 
     results.push(result);

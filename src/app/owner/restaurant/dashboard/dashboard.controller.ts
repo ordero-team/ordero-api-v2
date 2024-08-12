@@ -30,6 +30,25 @@ export class DashboardController {
     return response.data({ id: uuid(), data });
   }
 
+  @Get('orders/chart')
+  @Permissions(`${PermOwner.Dashboard}@${PermAct.R}`)
+  async orderChart(@Rest() rest, @Loc() loc: Location, @Res() response) {
+    const query = AppDataSource.createQueryBuilder(Order, 't1')
+      .where({ restaurant_id: rest.id })
+      .groupBy('t1.created_at')
+      .selectWithAlias(['_IFNULL(COUNT(t1.id), 0) AS total_order', 'created_at']);
+
+    if (loc) {
+      query.andWhere({ location_id: loc.id });
+    }
+    const orders = await query.search().dateRange().getRawMany();
+
+    const { start, end } = AppDataSource.createQueryBuilder(Order, 't1').dateRange().getParameters();
+    const results = await getChartData({ start, end }, orders, 'total_order');
+
+    return response.data(results);
+  }
+
   @Get('sales/total')
   @Permissions(`${PermOwner.Dashboard}@${PermAct.R}`)
   async salesTotal(@Rest() rest, @Loc() loc: Location, @Res() response) {
@@ -56,7 +75,7 @@ export class DashboardController {
       .where({ restaurant_id: rest.id })
       .andWhere('t1.status = :status', { status: OrderStatus.Completed })
       .groupBy('t1.created_at')
-      .selectWithAlias(['_IFNULL(SUM(t1.net_total),0) AS net_total', 'created_at']);
+      .selectWithAlias(['_IFNULL(SUM(t1.net_total), 0) AS net_total', 'created_at']);
 
     if (loc) {
       query.andWhere({ location_id: loc.id });

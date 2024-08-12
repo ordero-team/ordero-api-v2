@@ -10,8 +10,26 @@ VALUES
 	(
 		'01EP4ZDWCZCHVFA1ZHV13YGRJZ',
 		'owner',
-		'[\"owner_role@read\", \"owner_role@create\", \"owner_role@update\", \"owner_role@delete\", \"owner_restaurant@read\", \"owner_restaurant@create\", \"owner_restaurant@update\", \"owner_restaurant@delete\", \"owner_profile@read\", \"owner_profile@create\", \"owner_profile@update\", \"owner_profile@delete\", \"owner_staff@read\", \"owner_staff@create\", \"owner_staff@update\", \"owner_staff@delete\", \"owner_location@read\", \"owner_location@create\", \"owner_location@update\", \"owner_location@delete\", \"owner_table@read\", \"owner_table@create\", \"owner_table@update\", \"owner_table@delete\", \"owner_category@read\", \"owner_category@create\", \"owner_category@update\", \"owner_category@delete\", \"owner_variant@read\", \"owner_variant@create\", \"owner_variant@update\", \"owner_variant@delete\", \"owner_product@read\", \"owner_product@create\", \"owner_product@update\", \"owner_product@delete\", \"owner_stock@read\", \"owner_stock@create\", \"owner_stock@update\", \"owner_stock@delete\", \"owner_order@read\", \"owner_order@create\", \"owner_order@update\", \"owner_order@delete\", \"owner_dashboard@read\", \"owner_dashboard@create\", \"owner_dashboard@update\", \"owner_dashboard@delete\"]'
-		'2023-01-06 16:00:00.501148'
+		'[\"owner_role@read\", \"owner_role@create\", \"owner_role@update\", \"owner_role@delete\", \"owner_restaurant@read\", \"owner_restaurant@create\", \"owner_restaurant@update\", \"owner_restaurant@delete\", \"owner_profile@read\", \"owner_profile@create\", \"owner_profile@update\", \"owner_profile@delete\", \"owner_staff@read\", \"owner_staff@create\", \"owner_staff@update\", \"owner_staff@delete\", \"owner_location@read\", \"owner_location@create\", \"owner_location@update\", \"owner_location@delete\", \"owner_table@read\", \"owner_table@create\", \"owner_table@update\", \"owner_table@delete\", \"owner_category@read\", \"owner_category@create\", \"owner_category@update\", \"owner_category@delete\", \"owner_variant@read\", \"owner_variant@create\", \"owner_variant@update\", \"owner_variant@delete\", \"owner_product@read\", \"owner_product@create\", \"owner_product@update\", \"owner_product@delete\", \"owner_stock@read\", \"owner_stock@create\", \"owner_stock@update\", \"owner_stock@delete\", \"owner_order@read\", \"owner_order@create\", \"owner_order@update\", \"owner_order@delete\", \"owner_dashboard@read\", \"owner_dashboard@create\", \"owner_dashboard@update\", \"owner_dashboard@delete\"]' '2023-01-06 16:00:00.501148'
+	);
+
+INSERT INTO
+	`staff_role` (
+		`id`,
+		`created_at`,
+		`updated_at`,
+		`slug`,
+		`permissions`,
+		`is_default`
+	)
+VALUES
+	(
+		'01J1QHZNYKXAFHTAX7WX1Z3K1W',
+		'2024-07-01 23:41:25.000000',
+		'2024-08-10 20:34:01.173032',
+		'cashier',
+		'[\"staff_role@read\", \"staff_restaurant@read\", \"staff_restaurant@create\", \"staff_restaurant@update\", \"staff_restaurant@delete\", \"staff_profile@read\", \"staff_profile@create\", \"staff_profile@update\", \"staff_profile@delete\", \"staff_staff@read\", \"staff_staff@update\", \"staff_location@read\", \"staff_location@create\", \"staff_location@update\", \"staff_location@delete\", \"staff_table@read\", \"staff_table@create\", \"staff_table@update\", \"staff_table@delete\", \"staff_category@read\", \"staff_category@create\", \"staff_category@update\", \"staff_category@delete\", \"staff_variant@read\", \"staff_variant@create\", \"staff_variant@update\", \"staff_variant@delete\", \"staff_product@read\", \"staff_product@create\", \"staff_product@update\", \"staff_product@delete\", \"staff_stock@read\", \"staff_stock@create\", \"staff_stock@update\", \"staff_stock@delete\", \"staff_order@read\", \"staff_order@create\", \"staff_order@update\", \"staff_order@delete\", \"staff_dashboard@read\", \"staff_dashboard@create\", \"staff_dashboard@update\", \"staff_dashboard@delete\"]',
+		1
 	);
 
 --
@@ -35,7 +53,7 @@ VALUES
 	(
 		'01F2KFTXZNS01CJQCGNPJKXA1N',
 		'Yudha',
-		'owner@yuppey.com',
+		'owner@shimy.com',
 		'+6281931006841',
 		'$2a$10$9/R3pR5rP1gnnG0n06pbEORY39fXfuJ2.eJkdqvoi5oDScm1gcHRi',
 		NULL,

@@ -101,6 +101,9 @@ export class OrderController {
             orderProduct = checkOrderProduct;
           }
 
+          stock.allocated += product.qty;
+          await manager.getRepository(ProductStock).save(stock);
+
           orderProduct.order_id = order.id;
           orderProduct.product_variant_id = variant.id;
           orderProduct.qty = product.qty;
@@ -112,9 +115,11 @@ export class OrderController {
         }
 
         // Updare Order Number
+        const totalPrice = orderedProducts.reduce((price, a) => price + a.price, 0);
         await manager.getRepository(Order).update(order.id, {
           number: sequenceNumber(order.uid),
-          gross_total: orderedProducts.reduce((price, a) => price + a.price, 0),
+          gross_total: totalPrice,
+          net_total: totalPrice,
         });
 
         table.status = TableStatus.InUse;
