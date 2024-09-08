@@ -113,4 +113,8 @@ export class Order extends BaseEntity {
       builder.nextWhere('t1.status IN (:status)', { status: states });
     }
   }
+
+  get customerLogName(): string {
+    return `${this.customer_name}${this.customer_phone ? ' (' + this.customer_phone + ')' : ''}`;
+  }
 }
