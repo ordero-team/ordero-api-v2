@@ -25,7 +25,7 @@ import { In } from 'typeorm';
 @Controller(':order_id')
 @UseGuards(StaffAuthGuard())
 export class DetailController {
-  static async action(order: Order, action: OrderStatus, actor: Owner) {
+  static async action(order: Order, action: OrderStatus, actor: StaffUser) {
     try {
       // @TODO: How "REJECTED" flow works
       const stocks: ProductStock[] = [];
