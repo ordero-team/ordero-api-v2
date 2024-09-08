@@ -1,6 +1,6 @@
 import { uuid } from '@lib/uid/uuid.library';
 import * as fs from 'fs';
-import { camelCase, forOwn, groupBy, isPlainObject, shuffle, snakeCase, startCase } from 'lodash';
+import { camelCase, forOwn, groupBy, isPlainObject, lowerCase, replace, shuffle, snakeCase, startCase } from 'lodash';
 import { time } from './time.helper';
 
 const romanize = (num) => {
@@ -292,4 +292,8 @@ export const getChartData = async (
   }
 
   return results;
+};
+
+export const titleCase = (text: string) => {
+  return startCase(lowerCase(replace(replace(text, /-/g, ' '), /_/g, ' ')));
 };

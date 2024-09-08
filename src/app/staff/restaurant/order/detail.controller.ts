@@ -13,6 +13,7 @@ import { OrderTransformer } from '@db/transformers/order.transformer';
 import { GenericException } from '@lib/exceptions/generic.exception';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { time } from '@lib/helpers/time.helper';
+import { titleCase } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
 import Socket from '@lib/pubsub/pubsub.lib';
 import { Permissions } from '@lib/rbac';
@@ -24,82 +25,89 @@ import { In } from 'typeorm';
 @Controller(':order_id')
 @UseGuards(StaffAuthGuard())
 export class DetailController {
-  static async action(order: Order, action: OrderStatus, actor: StaffUser) {
+  static async action(order: Order, action: OrderStatus, actor: Owner) {
     try {
-      switch (order.status) {
-        case OrderStatus.WaitingApproval: {
-          // @TODO: How "REJECTED" flow works?
-          if (![OrderStatus.Confirmed, OrderStatus.Cancelled].includes(action)) {
-            throw new GenericException(`Order ${order.number} must be confirmed first.`);
+      // @TODO: How "REJECTED" flow works
+      const stocks: ProductStock[] = [];
+      switch (action) {
+        case OrderStatus.Confirmed: {
+          if (order.status !== OrderStatus.WaitingApproval) {
+            throw new GenericException(`Order ${order.number} can't be confirmed.`);
           }
-
-          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
 
           order.status = action;
           break;
         }
-        case OrderStatus.Confirmed: {
-          if (![OrderStatus.Preparing].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
-          }
-
-          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
-
-          order.status = OrderStatus.Preparing;
-          break;
-        }
         case OrderStatus.Preparing: {
-          if (![OrderStatus.Served].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.Confirmed) {
+            throw new GenericException(`Order ${order.number} can't be set to Preparing.`);
           }
-
-          order.status = OrderStatus.Served;
+          order.status = action;
           break;
         }
         case OrderStatus.Served: {
-          if (![OrderStatus.WaitingPayment].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.Preparing) {
+            throw new GenericException(`Order ${order.number} can't be set to Served.`);
           }
-
-          order.status = OrderStatus.WaitingPayment;
+          order.status = action;
           break;
         }
         case OrderStatus.WaitingPayment: {
-          if (![OrderStatus.Completed].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.Served) {
+            throw new GenericException(`Order ${order.number} can't be set to Waiting Payment.`);
           }
-
-          order.status = OrderStatus.Completed;
-          order.billed_at = time().toDate();
+          order.status = action;
           break;
         }
-        case OrderStatus.Completed:
-          // @TODO: Decrease stock
+        case OrderStatus.Completed: {
+          if (order.status !== OrderStatus.WaitingPayment) {
+            throw new GenericException(`Order ${order.number} can't be set to Completed.`);
+          }
+          order.status = action;
+          order.billed_at = time().toDate();
+
           const orderProducts = await OrderProduct.findBy({ order_id: order.id });
           const productStocks = await ProductStock.findBy({
             variant_id: In(orderProducts.map((val) => val.product_variant_id)),
+            location_id: order.location_id,
           });
 
           for (const stock of productStocks) {
             const orderProduct = orderProducts.find((val) => val.product_variant_id === stock.variant_id);
             if (orderProduct) {
-              stock.onhand -= orderProduct.qty;
-              stock.allocated -= orderProduct.qty;
+              stock.onhand -= stock.allocated; // Decrease Onhand Stock
+              stock.allocated -= orderProduct.qty; // Decrease Allocated Stock
               stock.actor = actor ? actor.logName : 'System';
-              stock.last_action = `Order ${order.number}`;
-              await AppDataSource.transaction(async (manager) => {
-                await manager.getRepository(ProductStock).save(stock);
-              });
+              stock.last_action = `Completed Order: ${order.number}`;
+              stocks.push(stock);
             }
           }
 
           break;
+        }
         case OrderStatus.Cancelled: {
-          if (![OrderStatus.WaitingApproval].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.WaitingApproval) {
+            throw new GenericException(`Order ${order.number} can't be cancelled.`);
+          }
+          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
+
+          order.status = action;
+
+          const orderProducts = await OrderProduct.findBy({ order_id: order.id });
+          const productStocks = await ProductStock.findBy({
+            variant_id: In(orderProducts.map((val) => val.product_variant_id)),
+            location_id: order.location_id,
+          });
+
+          for (const stock of productStocks) {
+            const orderProduct = orderProducts.find((val) => val.product_variant_id === stock.variant_id);
+            if (orderProduct) {
+              stock.allocated -= orderProduct.qty; // Decrease Allocated Stock
+              stock.actor = actor ? actor.logName : 'System';
+              stocks.push(stock);
+            }
           }
 
-          order.status = OrderStatus.Cancelled;
           break;
         }
       }
@@ -116,8 +124,16 @@ export class DetailController {
       await AppDataSource.transaction(async (manager) => {
         await manager.getRepository(Order).save(order);
 
-        if ([OrderStatus.Cancelled].includes(order.status)) {
-          await manager.getRepository(OrderProduct).update({ order_id: order.id }, { status: OrderProductStatus.Cancelled });
+        const orderProductStatus = {
+          [OrderStatus.Cancelled]: OrderProductStatus.Cancelled,
+          [OrderStatus.Completed]: OrderProductStatus.Served,
+          [OrderStatus.Preparing]: OrderProductStatus.Preparing,
+        };
+
+        if (order.status in orderProductStatus) {
+          await manager
+            .getRepository(OrderProduct)
+            .update({ order_id: order.id }, { status: orderProductStatus[order.status] });
         }
 
         if ([OrderStatus.Completed, OrderStatus.Cancelled].includes(order.status)) {
@@ -125,8 +141,19 @@ export class DetailController {
           if (!table) {
             throw new Error(`Table not found with ID: ${order.table_id}`);
           }
+
+          if (table.status !== TableStatus.InUse) {
+            throw new Error(`Table ${table.number} is not In Use`);
+          }
+
           table.status = TableStatus.Available;
           await manager.getRepository(Table).save(table);
+        }
+
+        // Update Stock
+        for (const stock of stocks) {
+          stock.last_action = `${titleCase(order.status)} Order: ${order.number}`;
+          await manager.getRepository(ProductStock).save(stock);
         }
 
         await manager.getRepository(Notification).save(notification);

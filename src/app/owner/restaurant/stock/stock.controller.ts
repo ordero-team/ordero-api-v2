@@ -153,9 +153,11 @@ export class StockController {
           }
         }
 
-        if (stocks.length > 0) {
-          await ProductStock.save(stocks);
-        }
+        await AppDataSource.transaction(async (manager) => {
+          for (const stock of stocks) {
+            await manager.getRepository(ProductStock).save(stock);
+          }
+        });
       } catch (error) {
         stats.fails.push(error.message);
       }
@@ -212,15 +214,22 @@ export class StockController {
     if (variant === null) {
       // Set all product variants to unavailable when parent are 0
       if (Number(body.onhand) <= 0) {
-        await ProductStock.update({ product_id: product.id }, { onhand: 0 });
-        await ProductVariant.update({ product_id: product.id }, { status: VariantStatus.Unvailable });
+        await AppDataSource.transaction(async (manager) => {
+          productStock.onhand = 0;
+          await manager.getRepository(ProductStock).save(productStock);
 
-        product.status = ProductStatus.Unvailable;
-        await product.save();
+          variant.status = VariantStatus.Unvailable;
+          await manager.getRepository(ProductVariant).save(variant);
+
+          product.status = ProductStatus.Unvailable;
+          await manager.getRepository(Product).save(product);
+        });
       }
     } else {
-      productStock.onhand = Number(body.onhand);
-      await productStock.save();
+      await AppDataSource.transaction(async (manager) => {
+        productStock.onhand = Number(body.onhand);
+        await manager.getRepository(ProductStock).save(productStock);
+      });
     }
 
     await response.item(productStock, StockTransformer);

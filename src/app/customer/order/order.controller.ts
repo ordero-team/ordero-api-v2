@@ -59,6 +59,7 @@ export class OrderController {
         await manager.getRepository(Order).save(order);
 
         const orderedProducts: OrderProduct[] = [];
+        const productStocks: ProductStock[] = [];
         for (const product of newOrder.products) {
           const variant = await manager.getRepository(ProductVariant).findOneOrFail({
             where: {
@@ -102,7 +103,8 @@ export class OrderController {
           }
 
           stock.allocated += product.qty;
-          await manager.getRepository(ProductStock).save(stock);
+          stock.actor = order.customerLogName ?? 'System';
+          productStocks.push(stock);
 
           orderProduct.order_id = order.id;
           orderProduct.product_variant_id = variant.id;
@@ -115,15 +117,21 @@ export class OrderController {
         }
 
         // Updare Order Number
+        const orderNumber = sequenceNumber(order.uid);
         const totalPrice = orderedProducts.reduce((price, a) => price + a.price, 0);
         await manager.getRepository(Order).update(order.id, {
-          number: sequenceNumber(order.uid),
+          number: orderNumber,
           gross_total: totalPrice,
           net_total: totalPrice,
         });
 
         table.status = TableStatus.InUse;
         await manager.getRepository(Table).save(table);
+
+        for (const stock of productStocks) {
+          stock.last_action = `Incoming Order: ${orderNumber}`;
+          await manager.getRepository(ProductStock).save(stock);
+        }
       });
 
       await order.reload();
