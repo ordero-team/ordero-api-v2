@@ -211,6 +211,10 @@ export class StockController {
 
     // @TODO: How about changing parent stock that affected to their variants stock
 
+    if (Number(body.onhand) < productStock.allocated) {
+      throw new Error('The onhand quantity cannot be lower than the allocated quantity.');
+    }
+
     if (variant === null) {
       // Set all product variants to unavailable when parent are 0
       if (Number(body.onhand) <= 0) {
