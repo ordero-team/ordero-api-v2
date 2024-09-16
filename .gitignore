@@ -39,5 +39,5 @@ env.yaml
 
 public/media/*
 public/reconcile/*
-
+public/files/*
 json/*

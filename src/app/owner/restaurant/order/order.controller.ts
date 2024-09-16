@@ -78,7 +78,9 @@ export class OrderController {
         '_t1.customer_phone AS customer_phone',
       ]);
 
-      const results = await query.search().sort().dateRange().getRawMany();
+      query.orderBy('t1.created_at', 'DESC');
+
+      const results = await query.search().dateRange().getRawMany();
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Sheet1');
 
@@ -114,7 +116,6 @@ export class OrderController {
     processing()
       .then((path) => {
         // send event
-        console.log({ url: config.getDownloadURI(path) });
         Socket.getInstance().event(me.id, {
           request_id,
           status: PubSubStatus.Success,
