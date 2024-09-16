@@ -11,6 +11,7 @@ export enum PubSubEvent {
 export enum PubSubEventType {
   OwnerCreateStock = 'owner_create_stock',
   OwnerGetTableLabel = 'owner_get_table_label',
+  OwnerGetOrderExcel = 'owner_get_order_excel',
 
   // Staff
   StaffCreateStock = 'staff_create_stock',
