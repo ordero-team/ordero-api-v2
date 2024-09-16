@@ -54,6 +54,7 @@
     "convert-html-to-pdf": "^1.0.1",
     "dayjs": "^1.11.4",
     "dotenv": "^16.0.1",
+    "exceljs": "^4.4.0",
     "express-useragent": "^1.0.15",
     "fastify-list-routes": "^1.0.0",
     "fastify-multer": "^2.0.3",
