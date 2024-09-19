@@ -12,7 +12,8 @@ import {
   StatusColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Order } from '../core/order.entity';
 import { Restaurant } from '../owner/restaurant.entity';
 import { StaffRole } from './role.entity';
 
@@ -80,6 +81,10 @@ export class StaffUser extends BaseEntity {
 
   @ManyToOne(() => Restaurant, { onDelete: 'SET NULL' })
   restaurant: Promise<Restaurant>;
+
+  @Exclude()
+  @OneToMany(() => Order, (order) => order.staff)
+  orders: Promise<Order[]>;
 
   get isBlocked() {
     return this.status === StaffUserStatus.Blocked;

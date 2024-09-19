@@ -10,8 +10,10 @@ import {
 import { Exclude } from 'class-transformer';
 import { Brackets, Column, Generated, Index, JoinColumn, ManyToOne, OneToMany, SelectQueryBuilder } from 'typeorm';
 import { Location } from '../owner/location.entity';
+import { Owner } from '../owner/owner.entity';
 import { Restaurant } from '../owner/restaurant.entity';
 import { Table } from '../owner/table.entity';
+import { StaffUser } from '../staff/user.entity';
 import { Customer } from './customer.entity';
 import { OrderProduct } from './order-product.entity';
 
@@ -94,6 +96,22 @@ export class Order extends BaseEntity {
   @JoinColumn()
   @ManyToOne(() => Location, (loc) => loc.orders, { onDelete: 'CASCADE' })
   location: Promise<Location>;
+
+  @Exclude()
+  @ForeignColumn()
+  staff_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => StaffUser, (user) => user.orders, { onDelete: 'SET NULL' })
+  staff: Promise<StaffUser>;
+
+  @Exclude()
+  @ForeignColumn()
+  owner_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => Owner, (user) => user.orders, { onDelete: 'SET NULL' })
+  owner: Promise<Owner>;
 
   @Exclude()
   @OneToMany(() => OrderProduct, (op) => op.order)

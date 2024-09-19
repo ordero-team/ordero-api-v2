@@ -11,7 +11,8 @@ import {
   StatusColumn,
 } from '@lib/typeorm/decorators';
 import { Exclude } from 'class-transformer';
-import { JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Order } from '../core/order.entity';
 import { Role } from '../core/role.entity';
 import { Location } from './location.entity';
 import { Restaurant } from './restaurant.entity';
@@ -84,6 +85,10 @@ export class Owner extends BaseEntity {
   @Exclude()
   @OneToOne(() => Media, (media) => media.owner)
   image: Promise<Media>;
+
+  @Exclude()
+  @OneToMany(() => Order, (order) => order.staff)
+  orders: Promise<Order[]>;
 
   get isVerified() {
     return this.verified_at !== null;

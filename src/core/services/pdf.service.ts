@@ -15,7 +15,6 @@ export class PdfService {
   create(template: string, data: any, options?: IPdfOption) {
     const html = fs.readFileSync(`${config.getTemplatePath()}/pdf/${template}.hbs`, 'utf8');
     const compiled = handlebars.compile(html)(data);
-
     const htmlToPdf = new HTMLToPDF(compiled, {
       waitForNetworkIdle: options.waitForNetworkIdle || false,
       browserOptions: {
@@ -29,6 +28,20 @@ export class PdfService {
     });
 
     return htmlToPdf.convert();
+  }
+
+  async billInvoice(data: any) {
+    return this.create('bill', data, {
+      pdf: {
+        width: '80mm',
+        margin: {
+          top: 0.5,
+          bottom: 0.5,
+          left: 0.5,
+          right: 0.5,
+        },
+      },
+    });
   }
 
   async tableLabel(data: any) {

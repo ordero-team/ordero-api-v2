@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Pembelian Restoran</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            width: 80mm;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .restaurant-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .info {
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 3px 0;
+        }
+        .total {
+            font-weight: bold;
+            border-top: 1px dashed #000;
+            margin-top: 10px;
+            padding-top: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="restaurant-name">{{restaurantName}}</div>
+        <div>{{restaurantAddress}}</div>
+        <div>Telp: {{restaurantPhone}}</div>
+    </div>
+    
+    <div class="info">
+        <div>Nomor Struk: #{{receiptNumber}}</div>
+        <div>Tanggal: {{billedAt}}</div>
+        <div>Kasir: {{cashierName}}</div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}}
+            <tr>
+                <td>{{this.name}}</td>
+                <td>{{this.qty}}</td>
+                <td>{{this.price}}</td>
+                <td>{{this.total}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    
+    <div class="total">
+        <div>Total: {{total}}</div>
+    </div>
+    
+    <div class="footer">
+        <p>Terima kasih atas kunjungan Anda!</p>
+        <p>Semoga harimu menyenangkan</p>
+        <p>Dari ❤️ oleh Ordero Team</p>
+    </div>
+</body>
+</html>
