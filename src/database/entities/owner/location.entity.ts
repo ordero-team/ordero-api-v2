@@ -18,6 +18,9 @@ export class Location extends BaseEntity {
   @BooleanColumn()
   is_default: boolean;
 
+  @NotNullColumn({ type: 'longtext' })
+  address: string;
+
   @Exclude()
   @ForeignColumn()
   restaurant_id: string;
