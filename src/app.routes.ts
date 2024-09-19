@@ -7,6 +7,7 @@ import { OwnerAuthModule } from './app/owner/auth/auth.module';
 import { OwnerModule } from './app/owner/owner.module';
 import { OwnerProfileModule } from './app/owner/profile/profile.module';
 import { OwnerCategoryModule } from './app/owner/restaurant/category/category.module';
+import { OwnerDashboardModule } from './app/owner/restaurant/dashboard/dashboard.module';
 import { OwnerLocationModule } from './app/owner/restaurant/location/location.module';
 import { OwnerNotificationModule } from './app/owner/restaurant/notification/notification.module';
 import { OwnerOrderModule } from './app/owner/restaurant/order/order.module';
@@ -20,6 +21,7 @@ import { RestaurantModule } from './app/restaurant/restaurant.module';
 import { StaffAuthModule } from './app/staff/auth/auth.module';
 import { StaffProfileModule } from './app/staff/profile/profile.module';
 import { StaffCategoryModule } from './app/staff/restaurant/category/category.module';
+import { StaffDashboardModule } from './app/staff/restaurant/dashboard/dashboard.module';
 import { StafffNotificationModule } from './app/staff/restaurant/notification/notification.module';
 import { StaffOrderModule } from './app/staff/restaurant/order/order.module';
 import { StaffProductModule } from './app/staff/restaurant/product/product.module';
@@ -78,6 +80,10 @@ export const routes: Routes = [
             path: '/:restaurant_id/notifications',
             module: OwnerNotificationModule,
           },
+          {
+            path: '/:restaurant_id/dashboard',
+            module: OwnerDashboardModule,
+          },
         ],
       },
     ],
@@ -120,6 +126,10 @@ export const routes: Routes = [
           {
             path: '/:restaurant_id/notifications',
             module: StafffNotificationModule,
+          },
+          {
+            path: '/:restaurant_id/dashboard',
+            module: StaffDashboardModule,
           },
         ],
       },

@@ -9,7 +9,7 @@ import { RestaurantTransformer } from './restaurant.transformer';
 
 export class StaffTransformer extends TransformerAbstract {
   get availableInclude() {
-    return ['restaurant', 'location', 'role'];
+    return ['restaurant', 'location', 'role', 'roleOnly'];
   }
 
   get defaultInclude() {
@@ -33,13 +33,16 @@ export class StaffTransformer extends TransformerAbstract {
     const grants = RequestHelper.getPermissionGrants();
     const role = await entity.role;
     const location = await entity.location;
+
     return {
       ...rest,
-      role: {
-        id: role.id,
-        name: role.slug,
-        permissions: encrypt(grants[role.slug]),
-      },
+      role: role
+        ? {
+            id: role.id,
+            name: role.slug,
+            permissions: encrypt(grants[role.slug]),
+          }
+        : null,
       location: location
         ? {
             id: location.id,
@@ -75,6 +78,6 @@ export class StaffTransformer extends TransformerAbstract {
     }
 
     const grants = RequestHelper.getPermissionGrants();
-    return { id: role.id, name: role.slug, permissions: encrypt(grants[role.slug]) };
+    return { id: role.id, name: role.slug, permissions: grants[role.slug] ? encrypt(grants[role.slug]) : null };
   }
 }

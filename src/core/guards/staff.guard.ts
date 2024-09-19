@@ -10,7 +10,6 @@ import { Reflector } from '@nestjs/core';
 import { get } from 'lodash';
 
 const validateRestaurant = async (request: any) => {
-  console.log(request);
   const user: StaffUser = request.user;
   if (!user) {
     throw new TokenException('Getting user was failed');

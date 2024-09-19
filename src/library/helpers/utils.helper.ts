@@ -1,5 +1,7 @@
+import { uuid } from '@lib/uid/uuid.library';
 import * as fs from 'fs';
-import { camelCase, forOwn, isPlainObject, shuffle, snakeCase, startCase } from 'lodash';
+import { camelCase, forOwn, groupBy, isPlainObject, lowerCase, replace, shuffle, snakeCase, startCase } from 'lodash';
+import { time } from './time.helper';
 
 const romanize = (num) => {
   const roman = {
@@ -249,4 +251,49 @@ export const mostFreq = (arr: any[]) => {
   }, {});
 
   return Object.keys(hashmap).reduce((a, b) => (hashmap[a] > hashmap[b] ? a : b));
+};
+
+export const getChartData = async (
+  { start, end }: { start: Date; end: Date },
+  data: any[],
+  columnName: string
+): Promise<{ id: string; count: number; total: number; label: string; labelType: 'daily' | 'hourly' }[]> => {
+  start =
+    start ||
+    time(Math.min(...data.map((v) => v.created_at)))
+      .set('hour', 0)
+      .set('minute', 0)
+      .toDate();
+  end = end || time().set('hour', 23).set('minute', 59).toDate();
+
+  const diff = -time(start).diff(end, 'day');
+  const timeDiffCount = diff !== 0 ? diff : -time(start).diff(end, 'hour');
+  const timeDiffType = diff !== 0 ? 'daily' : 'hourly';
+
+  const results = [];
+  for (let count = 0; count <= timeDiffCount; count++) {
+    const adder = timeDiffType === 'daily' ? 'day' : 'hour';
+    const formatTime = timeDiffType === 'daily' ? 'DD MMM' : 'HH';
+
+    const timeCounter = time(start).add(count, adder);
+    const groupedData = groupBy(data, (o) => time(o.created_at).format(formatTime));
+    const label = timeCounter.format(formatTime);
+    const total = groupedData[label]?.reduce((prevValue, data) => prevValue + Number(data[columnName]), 0) || 0;
+    const dataCount = groupedData[label]?.length || 0;
+    const result = {
+      id: uuid(),
+      count: dataCount,
+      total,
+      label: timeCounter,
+      labelType: timeDiffType,
+    };
+
+    results.push(result);
+  }
+
+  return results;
+};
+
+export const titleCase = (text: string) => {
+  return startCase(lowerCase(replace(replace(text, /-/g, ' '), /_/g, ' ')));
 };

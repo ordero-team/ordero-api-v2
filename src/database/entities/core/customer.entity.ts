@@ -62,4 +62,8 @@ export class Customer extends BaseEntity {
   get isValid() {
     return this.isVerified && this.isActive;
   }
+
+  get logName() {
+    return `${this.name} ${this.email || this.phone ? `<${this.email || this.phone}>` : ''}`;
+  }
 }

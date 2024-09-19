@@ -71,3 +71,14 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+## NOTES
+Since MySQL use caching password as default, you need to activate the native password on Docker by adding this command:
+```command: --mysql-native-password=ON```
+And update the password type of mysql.user by this command:
+```
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'XXXXX';
+
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'XXXXX';
+```

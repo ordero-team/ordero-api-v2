@@ -11,10 +11,13 @@ export enum PubSubEvent {
 export enum PubSubEventType {
   OwnerCreateStock = 'owner_create_stock',
   OwnerGetTableLabel = 'owner_get_table_label',
+  OwnerGetOrderExcel = 'owner_get_order_excel',
+  OwnerGetBill = 'owner_get_bill',
 
   // Staff
   StaffCreateStock = 'staff_create_stock',
   StaffGetTableLabel = 'staff_get_table_label',
+  StaffGetBill = 'staff_get_bill',
 
   // Customer
   CustomerCreateOrder = 'customer_create_order',

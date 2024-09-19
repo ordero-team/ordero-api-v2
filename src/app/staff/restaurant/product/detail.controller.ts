@@ -1,3 +1,4 @@
+import { Loc } from '@core/decorators/location.decorator';
 import { Quero } from '@core/decorators/quero.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { StaffAuthGuard } from '@core/guards/auth.guard';
@@ -5,13 +6,17 @@ import { StaffGuard } from '@core/guards/staff.guard';
 import { AwsService } from '@core/services/aws.service';
 import { PermAct, PermStaff } from '@core/services/role.service';
 import { Media } from '@db/entities/core/media.entity';
+import { Location } from '@db/entities/owner/location.entity';
+import { ProductHistory } from '@db/entities/owner/product-history.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
 import { Product } from '@db/entities/owner/product.entity';
 import { ProductTransformer } from '@db/transformers/product.transformer';
+import { RawTransformer } from '@db/transformers/raw.transformer';
 import { StockTransformer } from '@db/transformers/stock.transformer';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
 import { Permissions } from '@lib/rbac';
+import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
 import { Not } from 'typeorm';
 
@@ -112,5 +117,23 @@ export class DetailController {
     const stocks = await ProductStock.findBy(where);
 
     return response.collection(stocks, StockTransformer);
+  }
+
+  @Get('/histories')
+  @UseGuards(StaffGuard)
+  @Permissions(`${PermStaff.Product}@${PermAct.R}`)
+  async history(@Param() param, @Res() response, @Loc() location) {
+    const query = AppDataSource.createQueryBuilder(ProductHistory, 't1');
+    query.leftJoin(Location, 't2', 't2.id = t1.location_id');
+    query.where('t1.product_id = :product_id', { product_id: param.product_id });
+
+    if (location) {
+      query.andWhere('t2.id = :locId', { locId: location.id });
+    }
+
+    query.selectWithAlias(['t2.id', '_t2.name as location', 't1.action', 't1.data', 't1.actor', 't1.created_at']);
+
+    const data = await query.search().sort().getRawPaged();
+    await response.paginate(data, RawTransformer);
   }
 }

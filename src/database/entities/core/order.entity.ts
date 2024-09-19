@@ -10,8 +10,10 @@ import {
 import { Exclude } from 'class-transformer';
 import { Brackets, Column, Generated, Index, JoinColumn, ManyToOne, OneToMany, SelectQueryBuilder } from 'typeorm';
 import { Location } from '../owner/location.entity';
+import { Owner } from '../owner/owner.entity';
 import { Restaurant } from '../owner/restaurant.entity';
 import { Table } from '../owner/table.entity';
+import { StaffUser } from '../staff/user.entity';
 import { Customer } from './customer.entity';
 import { OrderProduct } from './order-product.entity';
 
@@ -28,7 +30,7 @@ export enum OrderStatus {
 @CoreEntity({ autoIncrement: 202410000001 })
 export class Order extends BaseEntity {
   public static sortable = ['number', 'status', 'created_at'];
-  public static searchable = ['search'];
+  public static searchable = ['search', 'status'];
 
   @Exclude()
   @Generated('increment')
@@ -96,6 +98,22 @@ export class Order extends BaseEntity {
   location: Promise<Location>;
 
   @Exclude()
+  @ForeignColumn()
+  staff_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => StaffUser, (user) => user.orders, { onDelete: 'SET NULL' })
+  staff: Promise<StaffUser>;
+
+  @Exclude()
+  @ForeignColumn()
+  owner_id: string;
+
+  @JoinColumn()
+  @ManyToOne(() => Owner, (user) => user.orders, { onDelete: 'SET NULL' })
+  owner: Promise<Owner>;
+
+  @Exclude()
   @OneToMany(() => OrderProduct, (op) => op.order)
   order_products: Promise<OrderProduct[]>;
 
@@ -105,5 +123,16 @@ export class Order extends BaseEntity {
         qb.where('t1.number LIKE :query', { query: `%${value}%` });
       })
     );
+  }
+
+  static onFilterStatus(value: any, builder: SelectQueryBuilder<Order>) {
+    const states = (value || '').split(',').filter((row) => Object.values(OrderStatus).includes(row));
+    if (states.length > 0) {
+      builder.nextWhere('t1.status IN (:status)', { status: states });
+    }
+  }
+
+  get customerLogName(): string {
+    return `${this.customer_name}${this.customer_phone ? ' (' + this.customer_phone + ')' : ''}`;
   }
 }

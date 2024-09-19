@@ -6,6 +6,7 @@ import { OwnerGuard } from '@core/guards/owner.guard';
 import { PdfService } from '@core/services/pdf.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { UtilService } from '@core/services/util.service';
+import { Order, OrderStatus } from '@db/entities/core/order.entity';
 import { Location } from '@db/entities/owner/location.entity';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { Restaurant } from '@db/entities/owner/restaurant.entity';
@@ -103,6 +104,16 @@ export class TableController {
     }
 
     const table = await Table.findOneByOrFail({ id: param.table_id });
+
+    if (table.status === TableStatus.InUse) {
+      const isUsedByOrder = await Order.findOneBy({
+        table_id: table.id,
+        status: Not(In([OrderStatus.Completed, OrderStatus.Cancelled])),
+      });
+      if (isUsedByOrder) {
+        throw new BadRequestException(`Table is still used for ${isUsedByOrder.number} (${isUsedByOrder.customer_name})`);
+      }
+    }
 
     const loc = await Location.findOneByOrFail({ id: table.location_id });
 

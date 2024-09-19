@@ -153,9 +153,11 @@ export class StockController {
           }
         }
 
-        if (stocks.length > 0) {
-          await ProductStock.save(stocks);
-        }
+        await AppDataSource.transaction(async (manager) => {
+          for (const stock of stocks) {
+            await manager.getRepository(ProductStock).save(stock);
+          }
+        });
       } catch (error) {
         stats.fails.push(error.message);
       }
@@ -194,7 +196,7 @@ export class StockController {
   @Put('/:stock_id')
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Stock}@${PermAct.U}`)
-  async update(@Rest() rest, @Body() body, @Res() response, @Param() param) {
+  async update(@Rest() rest, @Body() body, @Res() response, @Param() param, @Me() me: Owner) {
     const rules = {
       onhand: 'required|numeric|min:0',
     };
@@ -209,18 +211,39 @@ export class StockController {
 
     // @TODO: How about changing parent stock that affected to their variants stock
 
+    if (Number(body.onhand) < productStock.allocated) {
+      throw new Error('The onhand quantity cannot be lower than the allocated quantity.');
+    }
+
     if (variant === null) {
       // Set all product variants to unavailable when parent are 0
       if (Number(body.onhand) <= 0) {
-        await ProductStock.update({ product_id: product.id }, { onhand: 0 });
-        await ProductVariant.update({ product_id: product.id }, { status: VariantStatus.Unvailable });
+        await AppDataSource.transaction(async (manager) => {
+          productStock.onhand = 0;
+          productStock.last_action = `Update Stock`;
+          productStock.actor = me.logName;
+          await manager.getRepository(ProductStock).save(productStock);
 
-        product.status = ProductStatus.Unvailable;
-        await product.save();
+          variant.status = VariantStatus.Unvailable;
+          await manager.getRepository(ProductVariant).save(variant);
+
+          product.status = ProductStatus.Unvailable;
+          await manager.getRepository(Product).save(product);
+        });
       }
     } else {
-      productStock.onhand = Number(body.onhand);
-      await productStock.save();
+      await AppDataSource.transaction(async (manager) => {
+        productStock.onhand = Number(body.onhand);
+        productStock.last_action = `Update Stock`;
+        productStock.actor = me.logName;
+        await manager.getRepository(ProductStock).save(productStock);
+
+        variant.status = VariantStatus.Available;
+        await manager.getRepository(ProductVariant).save(variant);
+
+        product.status = ProductStatus.Available;
+        await manager.getRepository(Product).save(product);
+      });
     }
 
     await response.item(productStock, StockTransformer);

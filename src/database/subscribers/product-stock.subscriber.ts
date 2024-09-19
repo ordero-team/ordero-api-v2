@@ -15,7 +15,9 @@ export class ProductStockSubscriber implements EntitySubscriberInterface<Product
   }
 
   calculateStock(entity: ProductStock) {
-    entity.available = (entity.onhand || 0) - (entity.allocated || 0);
+    const allocated = entity.allocated || 0;
+    const onhand = entity.onhand || 0;
+    entity.available = onhand <= 0 && allocated <= 0 ? 0 : onhand - allocated;
   }
 
   /**
@@ -51,6 +53,7 @@ export class ProductStockSubscriber implements EntitySubscriberInterface<Product
       };
       history.product_id = entity.product_id;
       history.location_id = entity.location_id;
+      history.actor = entity.actor;
       await manager.getRepository(ProductHistory).save(history);
 
       // reset last action

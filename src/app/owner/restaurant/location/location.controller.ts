@@ -41,6 +41,7 @@ export class LocationController {
   async create(@Rest() rest, @Body() body, @Res() response) {
     const rules = {
       name: 'required|unique|safe_text',
+      address: 'required',
       is_default: 'boolean',
     };
     const validation = Validator.init(body, rules);
@@ -55,6 +56,7 @@ export class LocationController {
 
     const loc = new Location();
     loc.name = body.name;
+    loc.address = body.address;
     loc.is_default = isTrue(body.is_default);
     loc.restaurant_id = rest.id;
     await loc.save();
@@ -68,6 +70,7 @@ export class LocationController {
   async update(@Rest() rest, @Body() body, @Res() response, @Param() param) {
     const rules = {
       name: 'required|unique|safe_text',
+      address: 'required',
       is_default: 'boolean',
     };
     const validation = Validator.init(body, rules);
@@ -92,6 +95,7 @@ export class LocationController {
 
     const loc = await Location.findOneByOrFail({ id: param.location_id });
     loc.name = body.name;
+    loc.address = body.address;
     loc.is_default = isTrue(body.is_default);
     await loc.save();
 

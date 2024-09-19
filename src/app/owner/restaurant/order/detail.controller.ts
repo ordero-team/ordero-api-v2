@@ -2,19 +2,24 @@ import { Rest } from '@core/decorators/restaurant.decorator';
 import { Me } from '@core/decorators/user.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
+import { PdfService } from '@core/services/pdf.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { Notification, NotificationType } from '@db/entities/core/notification.entity';
 import { OrderProduct, OrderProductStatus } from '@db/entities/core/order-product.entity';
 import { Order, OrderStatus } from '@db/entities/core/order.entity';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { ProductStock } from '@db/entities/owner/product-stock.entity';
+import { Restaurant } from '@db/entities/owner/restaurant.entity';
 import { Table, TableStatus } from '@db/entities/owner/table.entity';
 import { OrderTransformer } from '@db/transformers/order.transformer';
 import { GenericException } from '@lib/exceptions/generic.exception';
 import { ValidationException } from '@lib/exceptions/validation.exception';
+import { config } from '@lib/helpers/config.helper';
 import { time } from '@lib/helpers/time.helper';
+import { titleCase, writeFile } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
-import Socket from '@lib/pubsub/pubsub.lib';
+import Logger from '@lib/logger/logger.library';
+import Socket, { PubSubEventType, PubSubPayloadType, PubSubStatus } from '@lib/pubsub/pubsub.lib';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { uuid } from '@lib/uid/uuid.library';
@@ -24,82 +29,92 @@ import { In } from 'typeorm';
 @Controller(':order_id')
 @UseGuards(OwnerAuthGuard())
 export class DetailController {
+  constructor(private pdf: PdfService) {}
+
   static async action(order: Order, action: OrderStatus, actor: Owner) {
     try {
-      switch (order.status) {
-        case OrderStatus.WaitingApproval: {
-          // @TODO: How "REJECTED" flow works?
-          if (![OrderStatus.Confirmed, OrderStatus.Cancelled].includes(action)) {
-            throw new GenericException(`Order ${order.number} must be confirmed first.`);
+      // @TODO: How "REJECTED" flow works
+      const stocks: ProductStock[] = [];
+      switch (action) {
+        case OrderStatus.Confirmed: {
+          if (order.status !== OrderStatus.WaitingApproval) {
+            throw new GenericException(`Order ${order.number} can't be confirmed.`);
           }
-
-          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
 
           order.status = action;
           break;
         }
-        case OrderStatus.Confirmed: {
-          if (![OrderStatus.Preparing].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
-          }
-
-          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
-
-          order.status = OrderStatus.Preparing;
-          break;
-        }
         case OrderStatus.Preparing: {
-          if (![OrderStatus.Served].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.Confirmed) {
+            throw new GenericException(`Order ${order.number} can't be set to Preparing.`);
           }
-
-          order.status = OrderStatus.Served;
+          order.status = action;
           break;
         }
         case OrderStatus.Served: {
-          if (![OrderStatus.WaitingPayment].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.Preparing) {
+            throw new GenericException(`Order ${order.number} can't be set to Served.`);
           }
-
-          order.status = OrderStatus.WaitingPayment;
+          order.status = action;
           break;
         }
         case OrderStatus.WaitingPayment: {
-          if (![OrderStatus.Completed].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.Served) {
+            throw new GenericException(`Order ${order.number} can't be set to Waiting Payment.`);
           }
-
-          order.status = OrderStatus.Completed;
-          order.billed_at = time().toDate();
+          order.status = action;
           break;
         }
-        case OrderStatus.Completed:
-          // @TODO: Decrease stock
+        case OrderStatus.Completed: {
+          if (order.status !== OrderStatus.WaitingPayment) {
+            throw new GenericException(`Order ${order.number} can't be set to Completed.`);
+          }
+          order.status = action;
+          order.billed_at = time().toDate();
+
           const orderProducts = await OrderProduct.findBy({ order_id: order.id });
           const productStocks = await ProductStock.findBy({
             variant_id: In(orderProducts.map((val) => val.product_variant_id)),
+            location_id: order.location_id,
           });
 
           for (const stock of productStocks) {
             const orderProduct = orderProducts.find((val) => val.product_variant_id === stock.variant_id);
             if (orderProduct) {
-              stock.onhand -= orderProduct.qty;
-              stock.allocated -= orderProduct.qty;
+              stock.onhand -= stock.allocated; // Decrease Onhand Stock
+              stock.allocated -= orderProduct.qty; // Decrease Allocated Stock
+              stock.sold += orderProduct.qty;
               stock.actor = actor ? actor.logName : 'System';
-              stock.last_action = `Order ${order.number}`;
-              await AppDataSource.transaction(async (manager) => {
-                await manager.getRepository(ProductStock).save(stock);
-              });
+              stock.last_action = `Completed Order: ${order.number}`;
+              stocks.push(stock);
             }
           }
 
           break;
+        }
         case OrderStatus.Cancelled: {
-          if (![OrderStatus.WaitingApproval].includes(action)) {
-            throw new GenericException(`Order ${order.number} can't be ${action}.`);
+          if (order.status !== OrderStatus.WaitingApproval) {
+            throw new GenericException(`Order ${order.number} can't be cancelled.`);
+          }
+          // @TODO: Able to cancel/decline Product and Recalculate Gross Total
+
+          order.status = action;
+
+          const orderProducts = await OrderProduct.findBy({ order_id: order.id });
+          const productStocks = await ProductStock.findBy({
+            variant_id: In(orderProducts.map((val) => val.product_variant_id)),
+            location_id: order.location_id,
+          });
+
+          for (const stock of productStocks) {
+            const orderProduct = orderProducts.find((val) => val.product_variant_id === stock.variant_id);
+            if (orderProduct) {
+              stock.allocated -= orderProduct.qty; // Decrease Allocated Stock
+              stock.actor = actor ? actor.logName : 'System';
+              stocks.push(stock);
+            }
           }
 
-          order.status = OrderStatus.Cancelled;
           break;
         }
       }
@@ -114,10 +129,22 @@ export class DetailController {
       notification.order_id = order.id;
 
       await AppDataSource.transaction(async (manager) => {
+        if (!order.staff_id && !order.owner_id) {
+          order.owner_id = actor.id;
+        }
+
         await manager.getRepository(Order).save(order);
 
-        if ([OrderStatus.Cancelled].includes(order.status)) {
-          await manager.getRepository(OrderProduct).update({ order_id: order.id }, { status: OrderProductStatus.Cancelled });
+        const orderProductStatus = {
+          [OrderStatus.Cancelled]: OrderProductStatus.Cancelled,
+          [OrderStatus.Completed]: OrderProductStatus.Served,
+          [OrderStatus.Preparing]: OrderProductStatus.Preparing,
+        };
+
+        if (order.status in orderProductStatus) {
+          await manager
+            .getRepository(OrderProduct)
+            .update({ order_id: order.id }, { status: orderProductStatus[order.status] });
         }
 
         if ([OrderStatus.Completed, OrderStatus.Cancelled].includes(order.status)) {
@@ -125,8 +152,20 @@ export class DetailController {
           if (!table) {
             throw new Error(`Table not found with ID: ${order.table_id}`);
           }
+
+          if (table.status !== TableStatus.InUse) {
+            throw new Error(`Table ${table.number} is not In Use`);
+          }
+
           table.status = TableStatus.Available;
           await manager.getRepository(Table).save(table);
+        }
+
+        // Update Stock
+        for (const stock of stocks) {
+          stock.last_action = `${titleCase(order.status)} Order: ${order.number}`;
+          stock.actor = actor.logName;
+          await manager.getRepository(ProductStock).save(stock);
         }
 
         await manager.getRepository(Notification).save(notification);
@@ -168,5 +207,83 @@ export class DetailController {
     await order.reload();
 
     return response.item(order, OrderTransformer);
+  }
+
+  @Get('/print')
+  @UseGuards(OwnerGuard)
+  @Permissions(`${PermOwner.Order}@${PermAct.R}`)
+  async generateBill(@Param() param, @Res() response, @Me() me: Owner, @Rest() restaurant: Restaurant) {
+    const request_id = uuid();
+    const processing = async (): Promise<string> => {
+      const order = await Order.findOneByOrFail({ id: param.order_id });
+
+      if (order.status !== OrderStatus.Completed) {
+        throw new GenericException(`Only completed order can be printed`);
+      }
+
+      const location = await order.location;
+      const staff = await order.staff;
+      const owner = await order.owner;
+
+      const products: { name: string; qty: string; price: string; total: string }[] = [];
+      const items = await order.order_products;
+      for (const item of items) {
+        const productVar = await item.product_variant;
+        const product = await productVar.product;
+        products.push({
+          name: product.name.length > 20 ? product.name.substring(0, 17) + '...' : product.name,
+          qty: item.qty.toString(),
+          price: item.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }),
+          total: (item.price * item.qty).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }),
+        });
+      }
+
+      const payload = {
+        restaurantName: restaurant.name,
+        restaurantAddress: location.address || '-',
+        restaurantPhone: restaurant.phone || '-',
+        receiptNumber: order.number,
+        billedAt: time(order.billed_at).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+        cashierName: (owner || staff).logName,
+        items: products,
+        total: order.net_total.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }),
+      };
+
+      const pdf = await this.pdf.billInvoice(payload);
+      const dir = `${config.getPublicPath()}/files`;
+      const filename = `${time().unix()}-order-bill.pdf`;
+      return writeFile(dir, filename, pdf);
+    };
+
+    processing()
+      .then((path) => {
+        // send event
+        Socket.getInstance().event(me.id, {
+          request_id,
+          status: PubSubStatus.Success,
+          type: PubSubEventType.OwnerGetBill,
+          payload: {
+            type: PubSubPayloadType.Download,
+            body: {
+              mime: 'text/href',
+              name: `${time().unix()}-order-bill.pdf`,
+              content: config.getDownloadURI(path),
+            },
+          },
+        });
+      })
+      .catch(async (error) => {
+        // send event
+        Socket.getInstance().event(me.id, {
+          request_id,
+          status: PubSubStatus.Fail,
+          type: PubSubEventType.OwnerGetBill,
+          error: error.message,
+        });
+
+        Logger.getInstance().notify(error);
+      });
+
+    return response.data({ request_id });
   }
 }

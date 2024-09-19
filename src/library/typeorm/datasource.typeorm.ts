@@ -24,6 +24,7 @@ export class Datasource {
     this._dataSource = new DataTypeORM(database as any);
     if (!this._dataSource.isInitialized) {
       await this._dataSource.initialize();
+      console.info('Database has been initialized!');
     }
   }
 }
