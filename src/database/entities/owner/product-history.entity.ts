@@ -17,6 +17,9 @@ export class ProductHistory extends BaseEntity {
   @JsonColumn()
   data: any;
 
+  @Column()
+  actor: string;
+
   @CreateDateColumn()
   created_at: Date;
 

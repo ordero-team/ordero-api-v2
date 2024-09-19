@@ -196,7 +196,7 @@ export class StockController {
   @Put('/:stock_id')
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Stock}@${PermAct.U}`)
-  async update(@Rest() rest, @Body() body, @Res() response, @Param() param) {
+  async update(@Rest() rest, @Body() body, @Res() response, @Param() param, @Me() me: Owner) {
     const rules = {
       onhand: 'required|numeric|min:0',
     };
@@ -220,6 +220,8 @@ export class StockController {
       if (Number(body.onhand) <= 0) {
         await AppDataSource.transaction(async (manager) => {
           productStock.onhand = 0;
+          productStock.last_action = `Update Stock`;
+          productStock.actor = me.logName;
           await manager.getRepository(ProductStock).save(productStock);
 
           variant.status = VariantStatus.Unvailable;
@@ -232,7 +234,15 @@ export class StockController {
     } else {
       await AppDataSource.transaction(async (manager) => {
         productStock.onhand = Number(body.onhand);
+        productStock.last_action = `Update Stock`;
+        productStock.actor = me.logName;
         await manager.getRepository(ProductStock).save(productStock);
+
+        variant.status = VariantStatus.Available;
+        await manager.getRepository(ProductVariant).save(variant);
+
+        product.status = ProductStatus.Available;
+        await manager.getRepository(Product).save(product);
       });
     }
 

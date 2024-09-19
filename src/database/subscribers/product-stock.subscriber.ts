@@ -53,6 +53,7 @@ export class ProductStockSubscriber implements EntitySubscriberInterface<Product
       };
       history.product_id = entity.product_id;
       history.location_id = entity.location_id;
+      history.actor = entity.actor;
       await manager.getRepository(ProductHistory).save(history);
 
       // reset last action

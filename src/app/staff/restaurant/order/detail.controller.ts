@@ -83,6 +83,7 @@ export class DetailController {
             if (orderProduct) {
               stock.onhand -= stock.allocated; // Decrease Onhand Stock
               stock.allocated -= orderProduct.qty; // Decrease Allocated Stock
+              stock.sold += orderProduct.qty;
               stock.actor = actor ? actor.logName : 'System';
               stock.last_action = `Completed Order: ${order.number}`;
               stocks.push(stock);
@@ -163,6 +164,7 @@ export class DetailController {
         // Update Stock
         for (const stock of stocks) {
           stock.last_action = `${titleCase(order.status)} Order: ${order.number}`;
+          stock.actor = actor.logName;
           await manager.getRepository(ProductStock).save(stock);
         }
 
