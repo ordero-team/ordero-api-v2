@@ -5,14 +5,15 @@ import { PermAct, PermOwner } from '@core/services/role.service';
 import { Owner } from '@db/entities/owner/owner.entity';
 import { StaffBlacklist } from '@db/entities/staff/blacklist.entity';
 import { StaffSession } from '@db/entities/staff/session.entity';
-import { StaffUser } from '@db/entities/staff/user.entity';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { config } from '@lib/helpers/config.helper';
 import { hash, hashAreEqual } from '@lib/helpers/encrypt.helper';
 import { time } from '@lib/helpers/time.helper';
 import { Validator } from '@lib/helpers/validator.helper';
+import Logger from '@lib/logger/logger.library';
 import { Permissions } from '@lib/rbac';
 import { uuid } from '@lib/uid/uuid.library';
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   Body,
@@ -30,8 +31,7 @@ import { ExtractJwt } from 'passport-jwt';
 
 @Controller()
 export class AuthController {
-  // constructor(private mail: MailerService) {}
-  constructor(private service: AuthService) {}
+  constructor(private service: AuthService, private mail: MailerService) {}
 
   static token(request: any): any {
     try {
@@ -155,24 +155,23 @@ export class AuthController {
       throw new ValidationException(validation);
     }
 
-    const staff: StaffUser = await StaffUser.findOne({ where: { email } });
-    if (staff && staff.id) {
-      staff.reset_token = uuid();
-      staff.reset_token_expires = time().add(24, 'hour').toDate();
-      await staff.save();
+    const owner: Owner = await Owner.findOne({ where: { email } });
+    if (owner && owner.id) {
+      owner.reset_token = uuid();
+      await owner.save();
 
-      // this.mail
-      //   .sendMail({
-      //     to: staff.email,
-      //     subject: 'Set up a new password',
-      //     template: 'change-password',
-      //     context: {
-      //       name: staff.name,
-      //       link: `${config.get('STAFF_URI')}/reset-password/${staff.reset_token}`,
-      //     },
-      //   })
-      //   .then(() => null)
-      //   .catch((error) => Logger.getInstance().notify(error));
+      this.mail
+        .sendMail({
+          to: owner.email,
+          subject: 'Set up a new password',
+          template: 'change-password',
+          context: {
+            name: owner.name,
+            link: `${config.get('APP_URI')}/restaurant/auth/reset-password/${owner.reset_token}`,
+          },
+        })
+        .then(() => null)
+        .catch((error) => Logger.getInstance().notify(error));
     }
 
     return response.noContent();
@@ -189,28 +188,23 @@ export class AuthController {
       throw new ValidationException(validation);
     }
 
-    const staff: StaffUser = await StaffUser.findOrFail({ where: { reset_token: body.token } });
-
-    if (time().toDate() > staff.reset_token_expires) {
-      throw new BadRequestException('This reset token has expired');
-    }
+    const staff: Owner = await Owner.findOrFail({ where: { reset_token: body.token } });
 
     staff.password = await hash(body.password);
     staff.reset_token = null;
-    staff.reset_token_expires = null;
     await staff.save();
 
-    // await this.mail
-    //   .sendMail({
-    //     to: staff.email,
-    //     subject: 'Changed password',
-    //     template: 'changed-password',
-    //     context: {
-    //       name: staff.name,
-    //     },
-    //   })
-    //   .then(() => null)
-    //   .catch((error) => Logger.getInstance().notify(error));
+    await this.mail
+      .sendMail({
+        to: staff.email,
+        subject: 'Changed password',
+        template: 'changed-password',
+        context: {
+          name: staff.name,
+        },
+      })
+      .then(() => null)
+      .catch((error) => Logger.getInstance().notify(error));
 
     return response.noContent();
   }

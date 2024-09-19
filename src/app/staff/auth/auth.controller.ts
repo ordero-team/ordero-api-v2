@@ -9,8 +9,10 @@ import { config } from '@lib/helpers/config.helper';
 import { hash, hashAreEqual } from '@lib/helpers/encrypt.helper';
 import { time } from '@lib/helpers/time.helper';
 import { Validator } from '@lib/helpers/validator.helper';
+import Logger from '@lib/logger/logger.library';
 import { Permissions } from '@lib/rbac';
 import { uuid } from '@lib/uid/uuid.library';
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   Body,
@@ -27,7 +29,7 @@ import { ExtractJwt } from 'passport-jwt';
 
 @Controller()
 export class StaffAuthController {
-  // constructor(private mail: MailerService) {}
+  constructor(private mail: MailerService) {}
 
   static token(request: any): any {
     try {
@@ -125,18 +127,18 @@ export class StaffAuthController {
       staff.reset_token_expires = time().add(24, 'hour').toDate();
       await staff.save();
 
-      // this.mail
-      //   .sendMail({
-      //     to: staff.email,
-      //     subject: 'Set up a new password',
-      //     template: 'change-password',
-      //     context: {
-      //       name: staff.name,
-      //       link: `${config.get('STAFF_URI')}/reset-password/${staff.reset_token}`,
-      //     },
-      //   })
-      //   .then(() => null)
-      //   .catch((error) => Logger.getInstance().notify(error));
+      this.mail
+        .sendMail({
+          to: staff.email,
+          subject: 'Set up a new password',
+          template: 'change-password',
+          context: {
+            name: staff.name,
+            link: `${config.get('APP_URI')}/staff/auth/reset-password/${staff.reset_token}`,
+          },
+        })
+        .then(() => null)
+        .catch((error) => Logger.getInstance().notify(error));
     }
 
     return response.noContent();
@@ -164,17 +166,17 @@ export class StaffAuthController {
     staff.reset_token_expires = null;
     await staff.save();
 
-    // await this.mail
-    //   .sendMail({
-    //     to: staff.email,
-    //     subject: 'Changed password',
-    //     template: 'changed-password',
-    //     context: {
-    //       name: staff.name,
-    //     },
-    //   })
-    //   .then(() => null)
-    //   .catch((error) => Logger.getInstance().notify(error));
+    await this.mail
+      .sendMail({
+        to: staff.email,
+        subject: 'Changed password',
+        template: 'changed-password',
+        context: {
+          name: staff.name,
+        },
+      })
+      .then(() => null)
+      .catch((error) => Logger.getInstance().notify(error));
 
     return response.noContent();
   }
