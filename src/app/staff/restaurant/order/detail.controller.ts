@@ -128,6 +128,10 @@ export class DetailController {
       notification.order_id = order.id;
 
       await AppDataSource.transaction(async (manager) => {
+        if (!order.staff_id && !order.owner_id) {
+          order.staff_id = actor.id;
+        }
+
         await manager.getRepository(Order).save(order);
 
         const orderProductStatus = {

@@ -109,7 +109,7 @@ export class OrderController {
           orderProduct.order_id = order.id;
           orderProduct.product_variant_id = variant.id;
           orderProduct.qty = product.qty;
-          orderProduct.price = variant.price * product.qty;
+          orderProduct.price = variant.price;
           orderProduct.status = OrderProductStatus.WaitingApproval;
           await manager.getRepository(OrderProduct).save(orderProduct);
 
