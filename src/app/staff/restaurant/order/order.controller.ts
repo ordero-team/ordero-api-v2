@@ -29,7 +29,7 @@ export class OrderController {
       query.andWhere('t1.status = :status', { status: quero.status });
     }
 
-    const results = await query.search().sort().getPaged();
+    const results = await query.search().sort().dateRange().getPaged();
     await response.paginate(results, OrderTransformer);
   }
 }
