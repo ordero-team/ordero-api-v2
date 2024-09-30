@@ -21,6 +21,7 @@ export enum PubSubEventType {
 
   // Customer
   CustomerCreateOrder = 'customer_create_order',
+  CustomerGetBill = 'customer_get_bill',
 }
 
 export enum PubSubStatus {
