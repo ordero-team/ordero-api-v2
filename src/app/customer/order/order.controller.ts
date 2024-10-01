@@ -130,7 +130,7 @@ export class OrderController {
 
         for (const stock of productStocks) {
           stock.last_action = `Incoming Order: ${orderNumber}`;
-          stock.actor = customer.logName;
+          stock.actor = order.customerLogName;
           await manager.getRepository(ProductStock).save(stock);
         }
       });
