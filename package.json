@@ -46,7 +46,7 @@
     "@nestjs/websockets": "9.2.1",
     "@sentry/node": "^7.10.0",
     "app-root-path": "^3.0.0",
-    "aws-sdk": "^2.817.0",
+    "aws-sdk": "^2.1691.0",
     "axios": "^1.6.7",
     "bcryptjs": "^2.4.3",
     "bwip-js": "^3.0.2",

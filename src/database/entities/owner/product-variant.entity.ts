@@ -1,13 +1,12 @@
 import { BaseEntity } from '@db/entities/base/base';
 import { CoreEntity, ForeignColumn, NotNullColumn, PriceColumn } from '@lib/typeorm/decorators';
-import { VariantStatus } from 'aws-sdk/clients/sagemaker';
 import { Exclude } from 'class-transformer';
 import { JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { OrderProduct } from '../core/order-product.entity';
 import { ProductStock } from './product-stock.entity';
 import { Product } from './product.entity';
 import { Restaurant } from './restaurant.entity';
-import { Variant } from './variant.entity';
+import { Variant, VariantStatus } from './variant.entity';
 
 @CoreEntity()
 export class ProductVariant extends BaseEntity {

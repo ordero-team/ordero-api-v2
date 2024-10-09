@@ -1,6 +1,7 @@
 import { mail } from '@config/mail.config';
 import { CoreModule } from '@core/core.module';
 import { SocketioGateway } from '@lib/pubsub/socket.gateway';
+import { Datasource } from '@lib/typeorm/datasource.typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -24,6 +25,16 @@ import { StaffModule } from './app/staff/staff.module';
     StaffModule,
   ],
   controllers: [AppController],
-  providers: [SocketioGateway],
+  providers: [
+    SocketioGateway,
+    {
+      provide: Datasource,
+      useFactory: () => Datasource.getInstance(),
+    },
+    {
+      provide: 'DATA_SOURCE',
+      useFactory: () => Datasource.getInstance().datasource,
+    },
+  ],
 })
 export class AppModule {}
