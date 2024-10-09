@@ -9,7 +9,6 @@ export class Datasource {
     if (Datasource._instance) {
       throw new Error('Error: Instantiation failed: Use Datasource.getInstance() instead of new');
     }
-    this.initialize().catch(console.error);
   }
 
   public static getInstance(): Datasource {
@@ -21,10 +20,17 @@ export class Datasource {
   }
 
   async initialize() {
-    this._dataSource = new DataTypeORM(database as any);
-    if (!this._dataSource.isInitialized) {
+    if (!this._dataSource || !this._dataSource.isInitialized) {
+      this._dataSource = new DataTypeORM(database as any);
       await this._dataSource.initialize();
-      console.info('Database has been initialized!');
+    }
+    return this._dataSource;
+  }
+
+  async destroy() {
+    if (this._dataSource && this._dataSource.isInitialized) {
+      await this._dataSource.destroy();
+      this._dataSource = null;
     }
   }
 }
