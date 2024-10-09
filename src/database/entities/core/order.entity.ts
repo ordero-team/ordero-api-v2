@@ -133,6 +133,6 @@ export class Order extends BaseEntity {
   }
 
   get customerLogName(): string {
-    return `${this.customer_name}${this.customer_phone ? ' (' + this.customer_phone + ')' : ''}`;
+    return `${this.customer_name}${this.customer_phone ? ` <${this.customer_phone}>` : ''}`;
   }
 }

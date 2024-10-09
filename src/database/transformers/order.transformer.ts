@@ -8,7 +8,11 @@ import { RawTransformer } from './raw.transformer';
 
 export class OrderTransformer extends TransformerAbstract {
   get availableInclude() {
-    return ['items', 'table', 'stats', 'location'];
+    return ['items', 'table', 'stats', 'restaurant', 'location'];
+  }
+
+  get defaultInclude() {
+    return ['restaurant'];
   }
 
   async includeItems(entity: Order) {
@@ -63,6 +67,10 @@ export class OrderTransformer extends TransformerAbstract {
 
   async includeLocation(entity: Order) {
     return await entity.location;
+  }
+
+  async includeRestaurant(entity: Order) {
+    return await entity.restaurant;
   }
 
   transform(entity: Order) {
