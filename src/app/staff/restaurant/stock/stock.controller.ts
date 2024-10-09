@@ -33,10 +33,11 @@ import { get } from 'lodash';
 import { In, IsNull } from 'typeorm';
 
 @Controller()
-@UseGuards(StaffAuthGuard())
+@UseGuards(StaffAuthGuard(), StaffGuard)
+// Enable this for Testing
+// @UseGuards(StaffAuthGuard())
 export class StockController {
   @Get()
-  @UseGuards(StaffGuard)
   @Permissions(`${PermStaff.Stock}@${PermAct.R}`)
   async index(@Rest() rest, @Res() response, @Loc() loc: Location) {
     const query = AppDataSource.createQueryBuilder(ProductStock, 't1').where({
@@ -52,7 +53,6 @@ export class StockController {
   }
 
   @Get('/:stock_id')
-  @UseGuards(StaffGuard)
   @Permissions(`${PermStaff.Stock}@${PermAct.R}`)
   async show(@Rest() rest, @Res() response, @Param() param) {
     const stock = await ProductStock.findOneByOrFail({
@@ -63,7 +63,6 @@ export class StockController {
   }
 
   @Post()
-  @UseGuards(StaffGuard)
   @Permissions(`${PermStaff.Stock}@${PermAct.C}`)
   async create(@Rest() rest, @Body() body, @Res() response, @Me() me: StaffUser) {
     const rules = {
@@ -211,7 +210,6 @@ export class StockController {
   }
 
   @Put('/:stock_id')
-  @UseGuards(StaffGuard)
   @Permissions(`${PermStaff.Stock}@${PermAct.U}`)
   async update(@Rest() rest, @Body() body, @Res() response, @Param() param, @Me() me: StaffUser) {
     const rules = {
