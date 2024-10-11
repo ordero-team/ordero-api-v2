@@ -15,9 +15,6 @@ import { get, isEmpty } from 'lodash';
 
 @Controller()
 @UseGuards(OwnerAuthGuard(), OwnerGuard)
-
-// Enable this for Testing
-// @UseGuards(OwnerAuthGuard())
 export class RestaurantController {
   constructor(private aws: AwsService) {}
 

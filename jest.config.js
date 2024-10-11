@@ -20,7 +20,7 @@ const config = {
       'jest-html-reporters',
       {
         filename: 'test-report.html',
-        openReport: true,
+        openReport: false,
         pageTitle: 'Ordero API - Unit Test Report',
         logoImgPath: 'public/ordero.svg',
       },

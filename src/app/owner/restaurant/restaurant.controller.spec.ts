@@ -1,7 +1,9 @@
+import { OwnerGuard } from '@core/guards/owner.guard';
 import { AwsService } from '@core/services/aws.service';
 import { Restaurant } from '@db/entities/owner/restaurant.entity';
 import { ValidationException } from '@lib/exceptions/validation.exception';
 import { Validator } from '@lib/helpers/validator.helper';
+import { RbacService } from '@lib/rbac';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RestaurantController } from './restaurant.controller';
 
@@ -25,6 +27,14 @@ describe('Owner Restaurant', () => {
           useValue: {
             uploadFile: jest.fn(),
           },
+        },
+        {
+          provide: OwnerGuard,
+          useValue: jest.fn().mockImplementation(() => true),
+        },
+        {
+          provide: RbacService,
+          useValue: jest.fn().mockImplementation(() => true),
         },
       ],
     }).compile();

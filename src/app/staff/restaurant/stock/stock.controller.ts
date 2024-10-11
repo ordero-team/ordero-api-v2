@@ -34,8 +34,6 @@ import { In, IsNull } from 'typeorm';
 
 @Controller()
 @UseGuards(StaffAuthGuard(), StaffGuard)
-// Enable this for Testing
-// @UseGuards(StaffAuthGuard())
 export class StockController {
   @Get()
   @Permissions(`${PermStaff.Stock}@${PermAct.R}`)
