@@ -24,7 +24,7 @@ import { IsNull } from 'typeorm';
 
 @Controller()
 export class OrderController {
-  constructor(private custService: CustomerService) {}
+  constructor(private readonly custService: CustomerService) {}
 
   static async createOrder(newOrder: IOrderDetail, customer: Customer): Promise<Order> {
     try {

@@ -14,19 +14,17 @@ import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, R
 import { get, isEmpty } from 'lodash';
 
 @Controller()
-@UseGuards(OwnerAuthGuard())
+@UseGuards(OwnerAuthGuard(), OwnerGuard)
 export class RestaurantController {
   constructor(private aws: AwsService) {}
 
   @Get()
-  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Restaurant}@${PermAct.R}`)
   async index(@Rest() rest, @Res() response) {
     return response.item(rest, RestaurantTransformer);
   }
 
   @Put()
-  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Restaurant}@${PermAct.U}`)
   async update(@Rest() rest: Restaurant, @Body() body, @Res() response) {
     const rules = {
@@ -52,7 +50,6 @@ export class RestaurantController {
   }
 
   @Post('/image/:type')
-  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Restaurant}@${PermAct.C}`)
   async uploadAvatar(@Req() request, @Res() response, @Rest() rest: Restaurant, @Param() param) {
     if (!['logo', 'banner'].includes(param.type)) {
@@ -80,7 +77,6 @@ export class RestaurantController {
   }
 
   @Delete('/image/:type')
-  @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Restaurant}@${PermAct.D}`)
   async deleteAvatar(@Res() response, @Rest() rest: Restaurant, @Param() param) {
     if (!['logo', 'banner'].includes(param.type)) {
