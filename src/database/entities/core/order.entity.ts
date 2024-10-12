@@ -121,6 +121,9 @@ export class Order extends BaseEntity {
     builder.nextWhere(
       new Brackets((qb) => {
         qb.where('t1.number LIKE :query', { query: `%${value}%` });
+        qb.orWhere('t1.customer_name LIKE :query', {
+          query: `%${value}%`,
+        });
       })
     );
   }
