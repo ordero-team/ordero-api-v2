@@ -4,7 +4,6 @@ import { Rest } from '@core/decorators/restaurant.decorator';
 import { Me } from '@core/decorators/user.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
-import { PdfService } from '@core/services/pdf.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { Order } from '@db/entities/core/order.entity';
 import { Location } from '@db/entities/owner/location.entity';
@@ -26,8 +25,6 @@ import * as ExcelJS from 'exceljs';
 @Controller()
 @UseGuards(OwnerAuthGuard())
 export class OrderController {
-  constructor(private pdf: PdfService) {}
-
   @Get()
   @UseGuards(OwnerGuard)
   @Permissions(`${PermOwner.Order}@${PermAct.R}`)

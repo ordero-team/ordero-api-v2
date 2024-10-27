@@ -50,6 +50,12 @@ export class Order extends BaseEntity {
   @PriceColumn()
   net_total: number;
 
+  @PriceColumn()
+  pay_amount: number;
+
+  @PriceColumn()
+  change_amount: number;
+
   @DateTimeColumn()
   billed_at: Date;
 
