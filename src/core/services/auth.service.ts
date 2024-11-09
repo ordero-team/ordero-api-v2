@@ -2,17 +2,17 @@ import { jwt } from '@config/jwt.config';
 import { Role } from '@db/entities/core/role.entity';
 import { Owner, OwnerStatus } from '@db/entities/owner/owner.entity';
 import { Restaurant, RestaurantStatus } from '@db/entities/owner/restaurant.entity';
+import { config } from '@lib/helpers/config.helper';
 import { hash, hashAreEqual } from '@lib/helpers/encrypt.helper';
-import Logger from '@lib/logger/logger.library';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
 import { uuid } from '@lib/uid/uuid.library';
-import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as JWT from 'jsonwebtoken';
+import { MailService } from './mail.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private mail: MailerService) {}
+  constructor(private readonly mailer: MailService) {}
 
   async attempt(username: string, pass: string): Promise<Owner | null> {
     const user = await Owner.findOne({ where: [{ email: username }, { phone: username }] });
@@ -74,24 +74,44 @@ export class AuthService {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async sendVerificationEmail(user: Owner, changeEmail = false): Promise<void> {
-    this.mail
-      .sendMail({
-        to: user.email,
-        subject: 'Verify Your Account',
-        template: 'register',
-        context: {
-          name: user.name,
-          code: user.verification_code,
-        },
-      })
-      .then(() => null)
-      .catch((error) => Logger.getInstance().notify(error));
+    this.mailer.sendVerificationCode({
+      receipient: user.email,
+      subject: 'Verify Your Account',
+      data: {
+        verification_code: user.verification_code,
+        team_name: 'Ordero',
+        name: user.name,
+      },
+    });
+
+    // this.mail
+    //   .sendMail({
+    //     to: user.email,
+    //     subject: 'Verify Your Account',
+    //     template: 'register',
+    //     context: {
+    //       name: user.name,
+    //       code: user.verification_code,
+    //     },
+    //   })
+    //   .then(() => null)
+    //   .catch((error) => Logger.getInstance().notify(error));
   }
 
   async forgotPassword(user: Owner): Promise<void> {
     user.reset_token = uuid();
     // user.reset_token_expires = time().add(24, 'hour').toDate();
     await user.save();
+
+    this.mailer.sendResetPassword({
+      receipient: user.email,
+      subject: 'Reset Password',
+      data: {
+        team_name: 'Ordero',
+        name: user.name,
+        reset_link: `${config.get('APP_URI')}/reset-password/${user.reset_token}`,
+      },
+    });
 
     // this.mail
     //   .sendMail({

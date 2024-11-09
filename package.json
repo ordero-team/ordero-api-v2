@@ -65,6 +65,7 @@
     "json2csv": "^6.0.0-alpha.2",
     "libphonenumber-js": "^1.10.12",
     "lodash": "^4.17.21",
+    "mailersend": "^2.3.0",
     "mysql-import": "^5.0.21",
     "mysql2": "^3.10.2",
     "nest-router": "^1.0.9",

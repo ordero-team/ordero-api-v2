@@ -156,23 +156,25 @@ export class AuthController {
     }
 
     const owner: Owner = await Owner.findOne({ where: { email } });
-    if (owner && owner.id) {
-      owner.reset_token = uuid();
-      await owner.save();
+    await this.service.forgotPassword(owner);
 
-      this.mail
-        .sendMail({
-          to: owner.email,
-          subject: 'Set up a new password',
-          template: 'change-password',
-          context: {
-            name: owner.name,
-            link: `${config.get('APP_URI')}/restaurant/auth/reset-password/${owner.reset_token}`,
-          },
-        })
-        .then(() => null)
-        .catch((error) => Logger.getInstance().notify(error));
-    }
+    // if (owner && owner.id) {
+    //   owner.reset_token = uuid();
+    //   await owner.save();
+
+    //   this.mail
+    //     .sendMail({
+    //       to: owner.email,
+    //       subject: 'Set up a new password',
+    //       template: 'change-password',
+    //       context: {
+    //         name: owner.name,
+    //         link: `${config.get('APP_URI')}/restaurant/auth/reset-password/${owner.reset_token}`,
+    //       },
+    //     })
+    //     .then(() => null)
+    //     .catch((error) => Logger.getInstance().notify(error));
+    // }
 
     return response.noContent();
   }
@@ -188,19 +190,19 @@ export class AuthController {
       throw new ValidationException(validation);
     }
 
-    const staff: Owner = await Owner.findOrFail({ where: { reset_token: body.token } });
+    const owner: Owner = await Owner.findOrFail({ where: { reset_token: body.token } });
 
-    staff.password = await hash(body.password);
-    staff.reset_token = null;
-    await staff.save();
+    owner.password = await hash(body.password);
+    owner.reset_token = null;
+    await owner.save();
 
     await this.mail
       .sendMail({
-        to: staff.email,
+        to: owner.email,
         subject: 'Changed password',
         template: 'changed-password',
         context: {
-          name: staff.name,
+          name: owner.name,
         },
       })
       .then(() => null)

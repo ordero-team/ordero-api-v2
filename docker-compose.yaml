@@ -95,6 +95,8 @@ services:
       TWILLIO_SID: '${TWILLIO_SID}'
       TWILLIO_TOKEN: '${TWILLIO_TOKEN}'
       TWILLIO_SERVICE: '${TWILLIO_SERVICE}'
+      MAILERSEND_API_KEY: '${MAILERSEND_API_KEY}'
+      MAILERSEND_DOMAIN: '${MAILERSEND_DOMAIN}'
     volumes:
       - 'ordero:/api'
     ports:

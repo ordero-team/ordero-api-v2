@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { AuthService } from './services/auth.service';
 import { AwsService } from './services/aws.service';
 import { CustomerService } from './services/customer.service';
+import { MailService } from './services/mail.service';
 import { PdfService } from './services/pdf.service';
 import { ProductService } from './services/product.service';
 import { RoleService } from './services/role.service';
@@ -26,6 +27,7 @@ const services = [
   ProductService,
   PdfService,
   UtilService,
+  MailService,
 ];
 
 @Global()

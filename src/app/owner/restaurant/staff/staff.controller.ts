@@ -2,6 +2,7 @@ import { Loc } from '@core/decorators/location.decorator';
 import { Rest } from '@core/decorators/restaurant.decorator';
 import { OwnerAuthGuard } from '@core/guards/auth.guard';
 import { OwnerGuard } from '@core/guards/owner.guard';
+import { MailService } from '@core/services/mail.service';
 import { PermAct, PermOwner } from '@core/services/role.service';
 import { Location } from '@db/entities/owner/location.entity';
 import { StaffRole } from '@db/entities/staff/role.entity';
@@ -11,16 +12,14 @@ import { ValidationException } from '@lib/exceptions/validation.exception';
 import { hash } from '@lib/helpers/encrypt.helper';
 import { randomChar } from '@lib/helpers/utils.helper';
 import { Validator } from '@lib/helpers/validator.helper';
-import Logger from '@lib/logger/logger.library';
 import { Permissions } from '@lib/rbac';
 import AppDataSource from '@lib/typeorm/datasource.typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 
 @Controller()
 @UseGuards(OwnerAuthGuard())
 export class StaffController {
-  constructor(private mail: MailerService) {}
+  constructor(private mail: MailService) {}
 
   @Get()
   @UseGuards(OwnerGuard)
@@ -94,18 +93,28 @@ export class StaffController {
     staff.restaurant_id = rest.id;
     await staff.save();
 
-    this.mail
-      .sendMail({
-        to: staff.email,
-        subject: 'Your staff account!',
-        template: 'staff-register',
-        context: {
-          name: staff.name,
-          password: plainPass,
-        },
-      })
-      .then(() => null)
-      .catch((error) => Logger.getInstance().notify(error));
+    await this.mail.sendStaffRegister({
+      receipient: staff.email,
+      subject: 'Your staff account!',
+      data: {
+        team_name: 'Ordero',
+        name: staff.name,
+        password: plainPass,
+      },
+    });
+
+    // this.mail
+    //   .sendMail({
+    //     to: staff.email,
+    //     subject: 'Your staff account!',
+    //     template: 'staff-register',
+    //     context: {
+    //       name: staff.name,
+    //       password: plainPass,
+    //     },
+    //   })
+    //   .then(() => null)
+    //   .catch((error) => Logger.getInstance().notify(error));
 
     await response.item(staff, StaffTransformer);
   }
