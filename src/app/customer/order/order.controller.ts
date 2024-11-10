@@ -30,7 +30,7 @@ export class OrderController {
     try {
       const order = new Order();
       await AppDataSource.transaction(async (manager) => {
-        const table = await manager.getRepository(Table).findOneBy({ id: order.table_id, status: TableStatus.Available });
+        const table = await manager.getRepository(Table).findOneBy({ id: newOrder.table_id, status: TableStatus.Available });
 
         if (!table) {
           throw new BadRequestException('Sorry, this table is not available right now');
@@ -47,7 +47,7 @@ export class OrderController {
 
         order.restaurant_id = newOrder.restaurant_id;
         order.location_id = table.location_id;
-        order.table_id = newOrder.table_id;
+        order.table_id = table.id;
         order.status = newOrder.status;
         order.note = newOrder.note;
         order.customer_id = customer?.id || null;
@@ -65,16 +65,15 @@ export class OrderController {
             where: {
               product_id: product.id,
               variant_id: get(product, 'variant_id', null) || IsNull(),
-              restaurant_id: newOrder.restaurant_id,
+              restaurant_id: order.restaurant_id,
               status: VariantStatus.Available,
             },
           });
 
           const stock = await manager.getRepository(ProductStock).findOneOrFail({
             where: {
-              restaurant_id: order.restaurant_id,
-              location_id: order.location_id,
               variant_id: variant.id,
+              product_id: variant.product_id,
             },
           });
 
