@@ -29,7 +29,7 @@ export class RestaurantController {
   async update(@Rest() rest: Restaurant, @Body() body, @Res() response) {
     const rules = {
       name: 'required',
-      phone: 'required|phone|unique',
+      phone: 'phone|unique',
       email: 'email',
       website: 'url',
       description: '',
